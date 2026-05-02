@@ -10,15 +10,14 @@ datasource db {
 enum ReviewDirection {
   EN_TO_FR
   FR_TO_EN
-  BOTH
 }
 
 model User {
   id         String   @id @default(uuid())
   googleId   String   @unique
-  email      String
+  email      String   @unique
   name       String
-  picture    String
+  picture    String?
   createdAt  DateTime @default(now())
 
   preference UserPreference?
@@ -26,8 +25,7 @@ model User {
 }
 
 model UserPreference {
-  id              String          @id @default(uuid())
-  userId          String          @unique
+  userId          String          @id
   reviewDirection ReviewDirection @default(EN_TO_FR)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -38,11 +36,8 @@ model Card {
   userId      String
   english     String
   french      String
-  easeFactor  Float    @default(2.5)
-  repetitions Int      @default(0)
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, english, french])
 }
