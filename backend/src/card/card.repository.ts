@@ -9,7 +9,7 @@ export class CardRepository {
 
   create(dto: CreateCardDto): Promise<Card> {
     return this.prisma.card.create({
-      data: { userId: dto.userId, english: dto.english, french: dto.french },
+      data: { english: dto.english, french: dto.french },
     });
   }
 

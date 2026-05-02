@@ -10,12 +10,16 @@ export class CardService {
 
   async create(dto: CreateCardDto): Promise<CardResponseDto> {
     const card = await this.cardRepository.create(dto);
-    return plainToInstance(CardResponseDto, card, { excludeExtraneousValues: true });
+    return plainToInstance(CardResponseDto, card, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async findById(id: string): Promise<CardResponseDto> {
     const card = await this.cardRepository.findById(id);
     if (!card) throw new NotFoundException('Card not found');
-    return plainToInstance(CardResponseDto, card, { excludeExtraneousValues: true });
+    return plainToInstance(CardResponseDto, card, {
+      excludeExtraneousValues: true,
+    });
   }
 }

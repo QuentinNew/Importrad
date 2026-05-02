@@ -8,7 +8,6 @@ import { CardResponseDto } from './dto/card-response.dto';
 
 const mockCard: CardResponseDto = {
   id: '123e4567-e89b-42d3-a456-556642440001',
-  userId: '123e4567-e89b-42d3-a456-556642440002',
   english: 'hello',
   french: 'bonjour',
   createdAt: new Date('2024-01-01'),
@@ -53,12 +52,11 @@ describe('CardController', () => {
 
       const response = await request(app.getHttpServer())
         .post('/cards')
-        .send({ userId: mockCard.userId, english: 'hello', french: 'bonjour' })
+        .send({ english: 'hello', french: 'bonjour' })
         .expect(201);
 
       expect(response.body).toMatchObject({
         id: mockCard.id,
-        userId: mockCard.userId,
         english: 'hello',
         french: 'bonjour',
       });
@@ -75,7 +73,6 @@ describe('CardController', () => {
 
       expect(response.body).toMatchObject({
         id: mockCard.id,
-        userId: mockCard.userId,
         english: 'hello',
         french: 'bonjour',
       });

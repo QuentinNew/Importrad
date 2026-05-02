@@ -6,4 +6,3 @@ import { CardModule } from './card/card.module';
   imports: [PrismaModule, CardModule],
 })
 export class AppModule {}
-

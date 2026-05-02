@@ -32,11 +32,11 @@ model UserPreference {
 
 model Card {
   id          String   @id @default(uuid())
-  userId      String
+  userId      String?
   english     String
   french      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 }

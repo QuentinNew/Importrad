@@ -1,9 +1,6 @@
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateCardDto {
-  @IsUUID()
-  userId: string;
-
   @IsString()
   @IsNotEmpty()
   english: string;

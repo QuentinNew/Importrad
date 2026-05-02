@@ -24,8 +24,7 @@ Whether a Review shows the English side (prompting for French) or the French sid
 The logic that takes a Card's history to focus difficult. Not defined yet.
 
 ### Difficult Card
-A Card whose SM-2 ease factor is below 2.0. Classification is automatic — no manual flagging. Used for progress tracking and surfacing struggling words.
-
+A Card identified by the system as needing extra review under the scheduling algorithm. Classification is automatic — no manual flagging. Used for progress tracking and surfacing struggling words.
 ### AI Prompt
 A curated, fixed-choice action available on any Card during or after Review. Examples: "Show example sentence", "Show synonyms", "Memory tip". Implemented as calls to an external AI provider (provider TBD). The interface is abstracted so the provider can be swapped without changing card or review logic.
 
