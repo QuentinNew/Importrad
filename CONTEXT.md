@@ -15,13 +15,13 @@ A single vocabulary pair: one English word/phrase and its French translation. Ca
 The flat, unordered collection of all Cards belonging to a User. There are no Decks or Tags — all Cards are studied together.
 
 ### Review
-A study event where the User sees one side of a Card and grades their recall using four levels: **Again / Hard / Good / Easy** (SM-2 graded input). Each Review produces a new SRS schedule for the Card.
+A study event where the User sees one side of a Card and grades their recall using four levels: **Again / Hard / Good / Easy**.
 
 ### Review Direction
 Whether a Review shows the English side (prompting for French) or the French side (prompting for English). Configurable per User, defaults to EN→FR. Both directions can be mixed.
 
-### SRS Schedule
-The computed next-review date and ease factor for a Card, maintained by the SM-2 algorithm. A Card whose ease factor drops below 2.0 is considered **Difficult**.
+### Algorithm
+The logic that takes a Card's history to focus difficult. Not defined yet.
 
 ### Difficult Card
 A Card whose SM-2 ease factor is below 2.0. Classification is automatic — no manual flagging. Used for progress tracking and surfacing struggling words.
@@ -30,10 +30,27 @@ A Card whose SM-2 ease factor is below 2.0. Classification is automatic — no m
 A curated, fixed-choice action available on any Card during or after Review. Examples: "Show example sentence", "Show synonyms", "Memory tip". Implemented as calls to an external AI provider (provider TBD). The interface is abstracted so the provider can be swapped without changing card or review logic.
 
 ### User
-An authenticated person identified by Google OAuth. Each User owns their own Pool, Reviews, and SRS Schedules. No email/password auth.
+An authenticated person identified by Google OAuth. Each User owns their own Pool and preference. No email/password auth.
 
 ### User Preference
 Per-user settings stored separately from identity. Currently holds Review Direction. Defaults are applied on first login.
+
+---
+
+## Backend Architecture
+
+### PrismaModule
+A global NestJS module (`@Global()`) that provides `PrismaService` — the singleton wrapper around `PrismaClient`. Imported once at the app root; available in all feature modules without re-importing.
+
+### CardModule
+The NestJS feature module that owns all Card-related API behavior. Contains:
+- `CardController` — HTTP boundary (`POST /cards`, `GET /cards/:id`)
+- `CardService` — business logic
+- `CardRepository` — all Prisma calls for Cards; injected into `CardService` and mocked in unit tests
+
+### DTO layer
+- `CreateCardDto` — validated request body for card creation (`userId`, `english`, `french`); uses `class-validator`
+- `CardResponseDto` — stable API response shape for a Card; decoupled from the Prisma model
 
 ---
 
