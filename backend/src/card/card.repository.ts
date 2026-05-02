@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCardDto } from './dto/create-card.dto';
+import { UpdateCardDto } from './dto/update-card.dto';
 import { Card } from '@prisma/client';
 
 @Injectable()
@@ -13,7 +14,22 @@ export class CardRepository {
     });
   }
 
+  findAll(): Promise<Card[]> {
+    return this.prisma.card.findMany();
+  }
+
   findById(id: string): Promise<Card | null> {
     return this.prisma.card.findUnique({ where: { id } });
+  }
+
+  update(id: string, dto: UpdateCardDto): Promise<Card> {
+    return this.prisma.card.update({
+      where: { id },
+      data: { english: dto.english, french: dto.french },
+    });
+  }
+
+  delete(id: string): Promise<Card> {
+    return this.prisma.card.delete({ where: { id } });
   }
 }
