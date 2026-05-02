@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ReviewDirection {
+  EN_TO_FR
+  FR_TO_EN
+  BOTH
+}
+
+model User {
+  id         String   @id @default(uuid())
+  googleId   String   @unique
+  email      String
+  name       String
+  picture    String
+  createdAt  DateTime @default(now())
+
+  preference UserPreference?
+  cards      Card[]
+}
+
+model UserPreference {
+  id              String          @id @default(uuid())
+  userId          String          @unique
+  reviewDirection ReviewDirection @default(EN_TO_FR)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Card {
+  id          String   @id @default(uuid())
+  userId      String
+  english     String
+  french      String
+  easeFactor  Float    @default(2.5)
+  repetitions Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, english, french])
+}

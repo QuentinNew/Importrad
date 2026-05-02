@@ -32,6 +32,9 @@ A curated, fixed-choice action available on any Card during or after Review. Exa
 ### User
 An authenticated person identified by Google OAuth. Each User owns their own Pool, Reviews, and SRS Schedules. No email/password auth.
 
+### User Preference
+Per-user settings stored separately from identity. Currently holds Review Direction. Defaults are applied on first login.
+
 ---
 
 ## Boundaries
