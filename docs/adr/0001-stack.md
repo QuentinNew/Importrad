@@ -4,18 +4,17 @@
 
 ## Context
 
-Mobile-first flashcard app with Google auth, CSV import, SRS scheduling, and AI follow-up prompts. Constraint: free-tier hosting throughout.
+Mobile-first flashcard app with Google auth, CSV import, and AI follow-up prompts. Constraint: free-tier hosting throughout.
 
 ## Decision
 
-| Layer | Choice |
-|---|---|
-| Frontend | Angular (SPA), hosted on Render (static site) |
-| Backend | NestJS (REST API), hosted on Render (web service) |
-| Database | Supabase (managed Postgres) |
-| ORM | Prisma |
-| Auth | Google OAuth via a NestJS auth module (Passport) |
-| SRS algorithm | SM-2 |
+| Layer     | Choice |
+|-----------|---|
+| Frontend  | Angular (SPA), hosted on Render (static site) |
+| Backend   | NestJS (REST API), hosted on Render (web service) |
+| Database  | Supabase (managed Postgres) |
+| ORM       | Prisma |
+| Auth      | Google OAuth via a NestJS auth module (Passport) |
 
 ## Rationale
 
@@ -23,7 +22,6 @@ Mobile-first flashcard app with Google auth, CSV import, SRS scheduling, and AI 
 - **Render**: single platform for both static frontend and Node backend; genuinely free long-term (accepts cold starts on free tier).
 - **Supabase**: best free managed Postgres available (500MB); connects via standard connection string — NestJS/Prisma don't use the Supabase client SDK.
 - **Prisma**: schema-first, TypeScript-native, clean migration workflow; preferred over TypeORM for its DX and type safety.
-- **SM-2**: battle-tested SRS algorithm, simple to implement server-side, directly produces the ease factor used to classify Difficult Cards.
 - **AI provider abstracted**: provider evaluation deferred; stubbing the interface now means zero refactor when the choice is made.
 
 ## Trade-offs
