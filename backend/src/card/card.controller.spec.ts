@@ -16,7 +16,10 @@ const mockCard: CardResponseDto = {
 
 const mockCardRepository = {
   create: jest.fn(),
+  findAll: jest.fn(),
   findById: jest.fn(),
+  update: jest.fn(),
+  delete: jest.fn(),
 };
 
 async function buildApp() {
@@ -63,6 +66,19 @@ describe('CardController', () => {
     });
   });
 
+  describe('GET /cards', () => {
+    it('returns 200 with all cards', async () => {
+      mockCardRepository.findAll.mockResolvedValue([mockCard]);
+
+      const response = await request(app.getHttpServer())
+        .get('/cards')
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]).toMatchObject({ id: mockCard.id });
+    });
+  });
+
   describe('GET /cards/:id', () => {
     it('returns 200 with card data when card exists', async () => {
       mockCardRepository.findById.mockResolvedValue(mockCard);
@@ -83,6 +99,58 @@ describe('CardController', () => {
 
       await request(app.getHttpServer())
         .get(`/cards/${mockCard.id}`)
+        .expect(404);
+    });
+  });
+
+  describe('PATCH /cards/:id', () => {
+    it('returns 200 with updated card data', async () => {
+      const updated = { ...mockCard, english: 'hi' };
+      mockCardRepository.update.mockResolvedValue(updated);
+
+      const response = await request(app.getHttpServer())
+        .patch(`/cards/${mockCard.id}`)
+        .send({ english: 'hi' })
+        .expect(200);
+
+      expect(response.body).toMatchObject({ english: 'hi' });
+    });
+
+    it('returns 404 when card does not exist', async () => {
+      mockCardRepository.update.mockRejectedValue(
+        Object.assign(new Error(), { code: 'P2025' }),
+      );
+
+      await request(app.getHttpServer())
+        .patch(`/cards/${mockCard.id}`)
+        .send({ english: 'hi' })
+        .expect(404);
+    });
+
+    it('returns 400 when body is empty', async () => {
+      await request(app.getHttpServer())
+        .patch(`/cards/${mockCard.id}`)
+        .send({})
+        .expect(400);
+    });
+  });
+
+  describe('DELETE /cards/:id', () => {
+    it('returns 204 when card is deleted', async () => {
+      mockCardRepository.delete.mockResolvedValue(mockCard);
+
+      await request(app.getHttpServer())
+        .delete(`/cards/${mockCard.id}`)
+        .expect(204);
+    });
+
+    it('returns 404 when card does not exist', async () => {
+      mockCardRepository.delete.mockRejectedValue(
+        Object.assign(new Error(), { code: 'P2025' }),
+      );
+
+      await request(app.getHttpServer())
+        .delete(`/cards/${mockCard.id}`)
         .expect(404);
     });
   });
