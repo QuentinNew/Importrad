@@ -8,6 +8,7 @@ node_modules/
 
 # IDE
 .env
+.env.*
 .claude
 /.idea
 /.awcache
