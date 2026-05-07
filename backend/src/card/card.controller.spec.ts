@@ -1,10 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ValidationPipe } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import request from 'supertest';
 import { CardController } from './card.controller';
 import { CardService } from './card.service';
 import { CardRepository } from './card.repository';
 import { CardResponseDto } from './dto/card-response.dto';
+
+const prismaNotFound = new Prisma.PrismaClientKnownRequestError('Record not found', {
+  code: 'P2025',
+  clientVersion: 'test',
+});
 
 const mockCard: CardResponseDto = {
   id: '123e4567-e89b-42d3-a456-556642440001',
@@ -41,7 +47,7 @@ describe('CardController', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;
 
   beforeEach(async () => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     app = await buildApp();
   });
 
@@ -118,7 +124,7 @@ describe('CardController', () => {
 
     it('returns 404 when card does not exist', async () => {
       mockCardRepository.update.mockRejectedValue(
-        Object.assign(new Error(), { code: 'P2025' }),
+        prismaNotFound,
       );
 
       await request(app.getHttpServer())
@@ -146,7 +152,7 @@ describe('CardController', () => {
 
     it('returns 404 when card does not exist', async () => {
       mockCardRepository.delete.mockRejectedValue(
-        Object.assign(new Error(), { code: 'P2025' }),
+        prismaNotFound,
       );
 
       await request(app.getHttpServer())

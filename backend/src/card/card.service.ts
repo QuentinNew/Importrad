@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { Prisma } from '@prisma/client';
 import { CardRepository } from './card.repository';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
@@ -49,6 +50,6 @@ export class CardService {
   }
 }
 
-function isPrismaNotFound(err: unknown): boolean {
-  return typeof err === 'object' && err !== null && (err as { code?: string }).code === 'P2025';
+function isPrismaNotFound(err: unknown): err is Prisma.PrismaClientKnownRequestError {
+  return err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025';
 }
