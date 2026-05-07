@@ -23,10 +23,10 @@ export class CardRepository {
   }
 
   update(id: string, dto: UpdateCardDto): Promise<Card> {
-    return this.prisma.card.update({
-      where: { id },
-      data: { english: dto.english, french: dto.french },
-    });
+    const data: { english?: string; french?: string } = {};
+    if (dto.english !== undefined) data.english = dto.english;
+    if (dto.french !== undefined) data.french = dto.french;
+    return this.prisma.card.update({ where: { id }, data });
   }
 
   delete(id: string): Promise<Card> {
