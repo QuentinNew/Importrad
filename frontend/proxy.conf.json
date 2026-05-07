@@ -1,5 +1,9 @@
 {
-  "/cards": {
+  "/api": {
+    "target": "http://localhost:3000",
+    "secure": false
+  },
+  "/swagger": {
     "target": "http://localhost:3000",
     "secure": false
   }

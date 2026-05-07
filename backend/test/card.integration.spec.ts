@@ -32,7 +32,7 @@ describe('Card (integration)', () => {
   describe('POST /cards', () => {
     it('creates a card and returns 201 with body', async () => {
       const res = await request(app.getHttpServer())
-        .post('/cards')
+        .post('/api/cards')
         .send({ english: 'hello', french: 'bonjour' })
         .expect(201);
 
@@ -42,14 +42,14 @@ describe('Card (integration)', () => {
 
     it('returns 400 when english is missing', async () => {
       await request(app.getHttpServer())
-        .post('/cards')
+        .post('/api/cards')
         .send({ french: 'bonjour' })
         .expect(400);
     });
 
     it('returns 400 when french is missing', async () => {
       await request(app.getHttpServer())
-        .post('/cards')
+        .post('/api/cards')
         .send({ english: 'hello' })
         .expect(400);
     });
@@ -58,12 +58,12 @@ describe('Card (integration)', () => {
   describe('GET /cards/:id', () => {
     it('returns 200 with card data when card exists', async () => {
       const created = await request(app.getHttpServer())
-        .post('/cards')
+        .post('/api/cards')
         .send({ english: 'cat', french: 'chat' })
         .expect(201);
 
       const res = await request(app.getHttpServer())
-        .get(`/cards/${created.body.id}`)
+        .get(`/api/cards/${created.body.id}`)
         .expect(200);
 
       expect(res.body).toMatchObject({ english: 'cat', french: 'chat' });
@@ -72,7 +72,7 @@ describe('Card (integration)', () => {
 
     it('returns 404 when card does not exist', async () => {
       await request(app.getHttpServer())
-        .get('/cards/00000000-0000-0000-0000-000000000000')
+        .get('/api/cards/00000000-0000-0000-0000-000000000000')
         .expect(404);
     });
   });
@@ -80,22 +80,22 @@ describe('Card (integration)', () => {
   describe('DELETE /cards/:id', () => {
     it('returns 204 and card is gone afterwards', async () => {
       const created = await request(app.getHttpServer())
-        .post('/cards')
+        .post('/api/cards')
         .send({ english: 'dog', french: 'chien' })
         .expect(201);
 
       await request(app.getHttpServer())
-        .delete(`/cards/${created.body.id}`)
+        .delete(`/api/cards/${created.body.id}`)
         .expect(204);
 
       await request(app.getHttpServer())
-        .get(`/cards/${created.body.id}`)
+        .get(`/api/cards/${created.body.id}`)
         .expect(404);
     });
 
     it('returns 404 when card does not exist', async () => {
       await request(app.getHttpServer())
-        .delete('/cards/00000000-0000-0000-0000-000000000000')
+        .delete('/api/cards/00000000-0000-0000-0000-000000000000')
         .expect(404);
     });
   });

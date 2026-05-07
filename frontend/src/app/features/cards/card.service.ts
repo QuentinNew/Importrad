@@ -6,7 +6,7 @@ import { Card, CreateCardPayload, UpdateCardPayload } from './card.model';
 @Injectable({ providedIn: 'root' })
 export class CardService {
   private readonly http = inject(HttpClient);
-  private readonly base = '/cards';
+  private readonly base = '/api/cards';
 
   getAll(): Observable<Card[]> {
     return this.http.get<Card[]>(this.base);
