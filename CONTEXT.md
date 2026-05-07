@@ -36,6 +36,23 @@ Per-user settings stored separately from identity. Currently holds Review Direct
 
 ---
 
+## Frontend Architecture
+
+### Folder structure
+
+```
+frontend/src/app/
+├── features/          ← one folder per domain feature (cards, review, …)
+│   └── cards/         ← flat files: component, dialog, service, model
+└── core/              ← created when auth lands (interceptors, guards)
+└── shared/            ← created when a second feature needs reuse
+```
+
+- File naming follows Angular 19 defaults: no `.component.` suffix (`cards.ts`, not `cards.component.ts`).
+- `core/` and `shared/` are not created until there is real content to put in them.
+
+---
+
 ## Backend Architecture
 
 ### PrismaModule
