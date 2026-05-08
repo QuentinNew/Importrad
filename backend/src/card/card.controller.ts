@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -8,8 +9,11 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { CardService } from './card.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CardService, ImportResult } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { CardResponseDto } from './dto/card-response.dto';
@@ -17,6 +21,18 @@ import { CardResponseDto } from './dto/card-response.dto';
 @Controller('cards')
 export class CardController {
   constructor(private readonly cardService: CardService) {}
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  importCsv(
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @Body('userId') userId?: string,
+  ): Promise<ImportResult> {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    return this.cardService.import(file.buffer, userId);
+  }
 
   @Post()
   create(@Body() dto: CreateCardDto): Promise<CardResponseDto> {
