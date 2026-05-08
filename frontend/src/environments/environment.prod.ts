@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://importrad-api.onrender.com'
+  apiUrl: 'https://importrad-api.onrender.com/api'
 };
