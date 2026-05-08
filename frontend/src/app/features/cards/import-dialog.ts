@@ -1,13 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CardService } from './card.service';
 
 @Component({
   selector: 'app-import-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatProgressSpinnerModule],
+  imports: [MatDialogModule, MatButtonModule],
   templateUrl: './import-dialog.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -25,17 +24,17 @@ export class ImportDialog {
   }
 
   submit(): void {
+    if (this.importing()) return;
     const file = this.selectedFile();
     if (!file) return;
     this.importing.set(true);
     this.cardService.importCsv(file).subscribe({
       next: (result) => {
-        this.importing.set(false);
-        setTimeout(() => this.dialogRef.close(result), 1500);
+        this.dialogRef.close(result);
       },
-      error: () => {
+      error: (err) => {
         this.importing.set(false);
-        this.snackBar.open('Import failed', 'Dismiss', { duration: 3000 });
+        this.snackBar.open(err?.error?.message ?? 'Import failed', 'Dismiss', { duration: 3000 });
       },
     });
   }

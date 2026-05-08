@@ -3,7 +3,7 @@
   <input type="file" accept=".csv" (change)="onFileChange($event)" />
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-button mat-dialog-close [disabled]="importing()">Cancel</button>
   <button mat-raised-button color="primary" [disabled]="!selectedFile() || importing()" (click)="submit()">
     {{ importing() ? 'Importing…' : 'Import' }}
   </button>

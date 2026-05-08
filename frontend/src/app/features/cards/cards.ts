@@ -42,8 +42,9 @@ export class Cards implements OnInit {
     });
 
     ref.afterClosed().subscribe((result) => {
-      if (result?.imported !== undefined) {
+      if (result != null) {
         this.load();
+        this.snackBar.open(`Imported ${result.imported}, skipped ${result.skipped}`, 'Dismiss', { duration: 3000 });
       }
     });
   }
