@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { parse } from 'csv-parse/sync';
 
 export interface ParsedRow {
   english: string;
@@ -13,11 +14,12 @@ export class CsvParserService {
   parse(csvText: string): ParsedRow[] {
     const rows: ParsedRow[] = [];
 
-    for (const line of csvText.split('\n')) {
-      const trimmed = line.trim();
-      if (!trimmed) continue;
+    const records: string[][] = parse(csvText, {
+      skip_empty_lines: true,
+      relax_column_count: false,
+    });
 
-      const parts = trimmed.split(',');
+    for (const parts of records) {
       const [rawLang1, rawLang2, word1, word2] = parts;
 
       if (!KNOWN_LANGUAGES.has(rawLang1)) {

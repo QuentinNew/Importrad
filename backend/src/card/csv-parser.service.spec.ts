@@ -53,5 +53,17 @@ describe('CsvParserService', () => {
       const csv = 'Anglais,Espagnol,hello,hola';
       expect(() => service.parse(csv)).toThrow(BadRequestException);
     });
+
+    it('handles a quoted field with embedded newline in word2', () => {
+      const csv = 'Anglais,Français,giddy,"étourdie\nétourdi"';
+      const result = service.parse(csv);
+      expect(result).toEqual([{ english: 'giddy', french: 'étourdie\nétourdi' }]);
+    });
+
+    it('handles a quoted field with embedded newline in word1', () => {
+      const csv = 'Anglais,Français,"lurid\n",affreux';
+      const result = service.parse(csv);
+      expect(result).toEqual([{ english: 'lurid\n', french: 'affreux' }]);
+    });
   });
 });
