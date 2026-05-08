@@ -43,6 +43,7 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://importrad:importrad@localhost:5432/importrad_test
+      DIRECT_URL: postgresql://importrad:importrad@localhost:5432/importrad_test
 
     services:
       postgres:
