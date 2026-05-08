@@ -31,7 +31,7 @@ export class CardController {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
-    return this.cardService.import(file.buffer, userId);
+    return this.cardService.importCsv(file.buffer, userId);
   }
 
   @Post()

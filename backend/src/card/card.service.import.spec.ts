@@ -19,7 +19,7 @@ function makeService() {
   );
 }
 
-describe('CardService.import', () => {
+describe('CardService.importCsv', () => {
   beforeEach(() => jest.resetAllMocks());
 
   it('imports rows and returns { imported, skipped }', async () => {
@@ -27,7 +27,7 @@ describe('CardService.import', () => {
     mockRepository.findByEnglishAndFrench.mockResolvedValue(null);
     mockRepository.create.mockResolvedValue({});
 
-    const result = await makeService().import(
+    const result = await makeService().importCsv(
       Buffer.from(csv),
       undefined,
     );
@@ -43,7 +43,7 @@ describe('CardService.import', () => {
       .mockResolvedValueOnce(null);         // cat/chat is new
     mockRepository.create.mockResolvedValue({});
 
-    const result = await makeService().import(Buffer.from(csv), undefined);
+    const result = await makeService().importCsv(Buffer.from(csv), undefined);
 
     expect(result).toEqual({ imported: 1, skipped: 1 });
     expect(mockRepository.create).toHaveBeenCalledTimes(1);
@@ -53,7 +53,7 @@ describe('CardService.import', () => {
     const csv = 'Anglais,Espagnol,hello,hola';
 
     await expect(
-      makeService().import(Buffer.from(csv), undefined),
+      makeService().importCsv(Buffer.from(csv), undefined),
     ).rejects.toThrow(BadRequestException);
   });
 
@@ -62,7 +62,7 @@ describe('CardService.import', () => {
     mockRepository.findByEnglishAndFrench.mockResolvedValue(null);
     mockRepository.create.mockResolvedValue({});
 
-    await makeService().import(Buffer.from(csv), 'user-123');
+    await makeService().importCsv(Buffer.from(csv), 'user-123');
 
     expect(mockRepository.create).toHaveBeenCalledWith({
       english: 'hello',

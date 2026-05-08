@@ -1,4 +1,5 @@
 
+import { BadRequestException } from '@nestjs/common';
 import { CsvParserService } from './csv-parser.service';
 
 describe('CsvParserService', () => {
@@ -48,13 +49,7 @@ describe('CsvParserService', () => {
       expect(result).toHaveLength(2);
     });
 
-    it('throws BadRequestException when an unknown language is encountered', () => {
-      const csv = 'Anglais,Espagnol,hello,hola';
-      expect(() => service.parse(csv)).toThrow();
-    });
-
-    it('throws with HTTP 400 status for unknown language', () => {
-      const { BadRequestException } = require('@nestjs/common');
+    it('throws BadRequestException (HTTP 400) for an unknown language', () => {
       const csv = 'Anglais,Espagnol,hello,hola';
       expect(() => service.parse(csv)).toThrow(BadRequestException);
     });

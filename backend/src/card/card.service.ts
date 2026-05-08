@@ -58,7 +58,7 @@ export class CardService {
     }
   }
 
-  async import(fileBuffer: Buffer, userId: string | undefined): Promise<ImportResult> {
+  async importCsv(fileBuffer: Buffer, userId: string | undefined): Promise<ImportResult> {
     const csvText = fileBuffer.toString('utf-8');
     const rows = this.csvParser.parse(csvText); // throws BadRequestException on unknown language
 
