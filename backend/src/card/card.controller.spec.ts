@@ -5,6 +5,7 @@ import request from 'supertest';
 import { CardController } from './card.controller';
 import { CardService } from './card.service';
 import { CardRepository } from './card.repository';
+import { CsvParserService } from './csv-parser.service';
 import { CardResponseDto } from './dto/card-response.dto';
 
 const prismaNotFound = new Prisma.PrismaClientKnownRequestError('Record not found', {
@@ -26,6 +27,7 @@ const mockCardRepository = {
   findById: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
+  findByEnglishAndFrench: jest.fn(),
 };
 
 async function buildApp() {
@@ -33,6 +35,7 @@ async function buildApp() {
     controllers: [CardController],
     providers: [
       CardService,
+      CsvParserService,
       { provide: CardRepository, useValue: mockCardRepository },
     ],
   }).compile();
@@ -158,6 +161,53 @@ describe('CardController', () => {
       await request(app.getHttpServer())
         .delete(`/cards/${mockCard.id}`)
         .expect(404);
+    });
+  });
+
+  describe('POST /cards/import', () => {
+    it('returns 201 with { imported, skipped } on a valid CSV upload', async () => {
+      mockCardRepository.findByEnglishAndFrench.mockResolvedValue(null);
+      mockCardRepository.create.mockResolvedValue(mockCard);
+
+      const csv = 'Anglais,Français,hello,bonjour';
+
+      const response = await request(app.getHttpServer())
+        .post('/cards/import')
+        .attach('file', Buffer.from(csv), { filename: 'words.csv', contentType: 'text/csv' })
+        .expect(201);
+
+      expect(response.body).toEqual({ imported: 1, skipped: 0 });
+    });
+
+    it('skips duplicate rows and reports correct counts', async () => {
+      mockCardRepository.findByEnglishAndFrench
+        .mockResolvedValueOnce(mockCard) // first row is a duplicate
+        .mockResolvedValueOnce(null);     // second row is new
+      mockCardRepository.create.mockResolvedValue(mockCard);
+
+      const csv = 'Anglais,Français,hello,bonjour\nAnglais,Français,cat,chat';
+
+      const response = await request(app.getHttpServer())
+        .post('/cards/import')
+        .attach('file', Buffer.from(csv), { filename: 'words.csv', contentType: 'text/csv' })
+        .expect(201);
+
+      expect(response.body).toEqual({ imported: 1, skipped: 1 });
+    });
+
+    it('returns 400 when CSV contains an unknown language', async () => {
+      const csv = 'Anglais,Espagnol,hello,hola';
+
+      await request(app.getHttpServer())
+        .post('/cards/import')
+        .attach('file', Buffer.from(csv), { filename: 'words.csv', contentType: 'text/csv' })
+        .expect(400);
+    });
+
+    it('returns 400 when no file is provided', async () => {
+      await request(app.getHttpServer())
+        .post('/cards/import')
+        .expect(400);
     });
   });
 });

@@ -6,6 +6,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { CardDialog, CardDialogData, CardDialogResult } from './card-dialog';
+import { ImportDialog } from './import-dialog';
 import { Card } from './card.model';
 import { CardService } from './card.service';
 
@@ -32,6 +33,19 @@ export class Cards implements OnInit {
     this.cardService.getAll().subscribe({
       next: (cards) => this.cards.set(cards),
       error: () => this.snackBar.open('Failed to load cards', 'Dismiss', { duration: 3000 }),
+    });
+  }
+
+  openImport(): void {
+    const ref = this.dialog.open<ImportDialog, void, { imported: number; skipped: number }>(ImportDialog, {
+      width: '360px',
+    });
+
+    ref.afterClosed().subscribe((result) => {
+      if (result != null) {
+        this.load();
+        this.snackBar.open(`Imported ${result.imported}, skipped ${result.skipped}`, 'Dismiss', { duration: 3000 });
+      }
     });
   }
 

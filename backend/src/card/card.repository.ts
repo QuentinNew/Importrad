@@ -32,4 +32,13 @@ export class CardRepository {
   delete(id: string): Promise<Card> {
     return this.prisma.card.delete({ where: { id } });
   }
+
+  findByEnglishAndFrench(english: string, french: string): Promise<Card | null> {
+    return this.prisma.card.findFirst({
+      where: {
+        english: { equals: english, mode: 'insensitive' },
+        french: { equals: french, mode: 'insensitive' },
+      },
+    });
+  }
 }

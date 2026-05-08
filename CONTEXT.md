@@ -25,6 +25,9 @@ The logic that takes a Card's history to focus difficult. Not defined yet.
 
 ### Difficult Card
 A Card identified by the system as needing extra review under the scheduling algorithm. Classification is automatic — no manual flagging. Used for progress tracking and surfacing struggling words.
+### Import
+A bulk operation that parses a CSV file and creates Cards from it. Each row is `<lang1>,<lang2>,<word_in_lang1>,<word_in_lang2>`. The importer normalises `Détecter la langue` to `Anglais`, swaps columns when direction is `Français,Anglais`, rejects rows with unknown language values (HTTP 400), and silently skips duplicates. Returns `{ imported, skipped }`.
+
 ### AI Prompt
 A curated, fixed-choice action available on any Card during or after Review. Examples: "Show example sentence", "Show synonyms", "Memory tip". Implemented as calls to an external AI provider (provider TBD). The interface is abstracted so the provider can be swapped without changing card or review logic.
 
