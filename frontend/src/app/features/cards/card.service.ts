@@ -24,4 +24,10 @@ export class CardService {
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
+
+  importCsv(file: File): Observable<{ imported: number; skipped: number }> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<{ imported: number; skipped: number }>(`${this.base}/import`, form);
+  }
 }
