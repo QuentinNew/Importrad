@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, inject, OnInit, signal } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Card } from '../cards/card.model';
 import { CardService } from '../cards/card.service';
+import { CardDialog, CardDialogData, CardDialogResult } from '../cards/card-dialog';
 
 @Component({
   selector: 'app-practice',
@@ -13,6 +15,7 @@ import { CardService } from '../cards/card.service';
 export class Practice implements OnInit {
   private readonly cardService = inject(CardService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   @ViewChild('revealBtn') revealBtn?: ElementRef<HTMLButtonElement>;
   @ViewChild('cardStage') cardStage?: ElementRef<HTMLDivElement>;
@@ -59,6 +62,30 @@ export class Practice implements OnInit {
     this.currentIndex.set(0);
     this.revealed.set(false);
     setTimeout(() => (this.revealBtn?.nativeElement ?? this.cardStage?.nativeElement)?.focus(), 0);
+  }
+
+  openEdit(): void {
+    const card = this.currentCard();
+    if (!card) return;
+
+    const data: CardDialogData = { card };
+    const ref = this.dialog.open<CardDialog, CardDialogData, CardDialogResult>(CardDialog, {
+      width: '400px',
+      data,
+    });
+
+    ref.afterClosed().subscribe((result) => {
+      if (!result) return;
+      this.cardService.update(card.id, result).subscribe({
+        next: (updated) => {
+          const idx = this.currentIndex();
+          this.cards.update((list) =>
+            list.map((c, i) => (i === idx ? { ...c, ...updated } : c))
+          );
+        },
+        error: () => this.snackBar.open('Failed to update card', 'Dismiss', { duration: 3000 }),
+      });
+    });
   }
 
   private shuffle<T>(arr: T[]): T[] {
