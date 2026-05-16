@@ -76,6 +76,7 @@ describe('DefinitionService', () => {
 
       expect(fetchMock).toHaveBeenCalledWith(
         'https://api.dictionaryapi.dev/api/v2/entries/en/clamber',
+        expect.objectContaining({ signal: expect.anything() }),
       );
     });
 
@@ -91,6 +92,7 @@ describe('DefinitionService', () => {
 
       expect(fetchMock).toHaveBeenCalledWith(
         'https://api.dictionaryapi.dev/api/v2/entries/en/Clamber',
+        expect.objectContaining({ signal: expect.anything() }),
       );
     });
 
