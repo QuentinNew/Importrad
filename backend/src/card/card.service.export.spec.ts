@@ -31,33 +31,25 @@ function makeService() {
 describe('CardService.exportCsv', () => {
   beforeEach(() => jest.resetAllMocks());
 
-  it('returns an empty string when user has no cards', async () => {
-    mockRepository.findAllByUserId.mockResolvedValue([]);
+  it('returns an empty string when there are no cards', async () => {
+    mockRepository.findAll.mockResolvedValue([]);
 
-    const csv = await makeService().exportCsv('user-1');
+    const csv = await makeService().exportCsv();
 
     expect(csv).toBe('');
   });
 
   it('each card appears as a 4-column row Anglais,Français,<english>,<french> with no header', async () => {
-    mockRepository.findAllByUserId.mockResolvedValue([
-      { id: '1', english: 'hello', french: 'bonjour', userId: 'user-1', createdAt: new Date(), updatedAt: new Date() },
-      { id: '2', english: 'cat', french: 'chat', userId: 'user-1', createdAt: new Date(), updatedAt: new Date() },
+    mockRepository.findAll.mockResolvedValue([
+      { id: '1', english: 'hello', french: 'bonjour', userId: null, createdAt: new Date(), updatedAt: new Date() },
+      { id: '2', english: 'cat', french: 'chat', userId: null, createdAt: new Date(), updatedAt: new Date() },
     ]);
 
-    const csv = await makeService().exportCsv('user-1');
+    const csv = await makeService().exportCsv();
 
     const lines = csv.split('\n');
     expect(lines).toHaveLength(2);
     expect(lines[0]).toBe('Anglais,Français,hello,bonjour');
     expect(lines[1]).toBe('Anglais,Français,cat,chat');
-  });
-
-  it('calls repository with the correct userId', async () => {
-    mockRepository.findAllByUserId.mockResolvedValue([]);
-
-    await makeService().exportCsv('user-42');
-
-    expect(mockRepository.findAllByUserId).toHaveBeenCalledWith('user-42');
   });
 });

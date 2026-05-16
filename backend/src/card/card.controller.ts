@@ -28,7 +28,7 @@ export class CardController {
 
   @Get('export')
   async exportCsv(@Res() res: Response): Promise<void> {
-    const csv = await this.cardService.exportCsv(PLACEHOLDER_USER_ID);
+    const csv = await this.cardService.exportCsv();
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename="importrad-export.csv"');
     res.send(csv);

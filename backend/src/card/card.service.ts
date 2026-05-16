@@ -71,8 +71,8 @@ export class CardService {
     return this.definitionService.fetchDefinition(card.english);
   }
 
-  async exportCsv(userId: string): Promise<string> {
-    const cards = await this.cardRepository.findAllByUserId(userId);
+  async exportCsv(): Promise<string> {
+    const cards = await this.cardRepository.findAll();
     return cards.map((c) => `Anglais,Français,${c.english},${c.french}`).join('\n');
   }
 
