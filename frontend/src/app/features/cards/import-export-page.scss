@@ -19,10 +19,8 @@
 }
 
 .file-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
   cursor: pointer;
+  align-self: flex-start;
 }
 
 .file-input {
