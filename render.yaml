@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: importrad-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install && npx prisma migrate deploy && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: NODE_ENV
+        value: production
+
+  - type: static
+    name: importrad-frontend
+    rootDir: frontend
+    buildCommand: npm install && npx ng build
+    staticPublishPath: dist/frontend/browser
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
