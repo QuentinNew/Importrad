@@ -9,10 +9,12 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 import { CardService, ImportResult } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
@@ -23,6 +25,14 @@ import { PLACEHOLDER_USER_ID } from './constants';
 @Controller('cards')
 export class CardController {
   constructor(private readonly cardService: CardService) {}
+
+  @Get('export')
+  async exportCsv(@Res() res: Response): Promise<void> {
+    const csv = await this.cardService.exportCsv(PLACEHOLDER_USER_ID);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="importrad-export.csv"');
+    res.send(csv);
+  }
 
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))

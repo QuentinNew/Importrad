@@ -1,0 +1,62 @@
+<div class="import-export-page">
+  <section aria-labelledby="import-heading" class="import-section">
+    <h2 id="import-heading">Import</h2>
+    <p>Upload a Google Translate CSV file to import cards into your library.</p>
+
+    <label for="csv-file-input" class="file-label">
+      Choose CSV file
+      <input
+        id="csv-file-input"
+        type="file"
+        accept=".csv"
+        (change)="onFileChange($event)"
+        [disabled]="importing()"
+        class="file-input"
+        aria-describedby="file-hint"
+      />
+    </label>
+    <span id="file-hint" class="file-hint">
+      @if (selectedFile()) {
+        {{ selectedFile()!.name }}
+      } @else {
+        No file selected
+      }
+    </span>
+
+    <button
+      mat-raised-button
+      color="primary"
+      [disabled]="!selectedFile() || importing()"
+      (click)="submitImport()"
+      aria-live="polite"
+    >
+      {{ importing() ? 'Importing…' : 'Import' }}
+    </button>
+
+    @if (importResult()) {
+      <p class="import-result" role="status">
+        Imported {{ importResult()!.imported }} card{{ importResult()!.imported !== 1 ? 's' : '' }}
+        @if (importResult()!.skipped > 0) {
+          , {{ importResult()!.skipped }} skipped
+        }
+        @if (importResult()!.failed.length > 0) {
+          , {{ importResult()!.failed.length }} failed
+        }
+      </p>
+    }
+  </section>
+
+  <section aria-labelledby="export-heading" class="export-section">
+    <h2 id="export-heading">Export</h2>
+    <p>Download all your cards as a Google Translate CSV file.</p>
+
+    <button
+      mat-raised-button
+      color="accent"
+      [disabled]="exporting()"
+      (click)="export()"
+    >
+      {{ exporting() ? 'Exporting…' : 'Export' }}
+    </button>
+  </section>
+</div>

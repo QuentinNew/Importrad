@@ -24,14 +24,15 @@
       <span>Practice</span>
     </a>
 
-    <button
+    <a
+      routerLink="/import-export"
+      routerLinkActive="on"
       class="ir-tab"
-      (click)="openImport()"
-      aria-label="Import CSV"
+      aria-label="Import / Export"
     >
       <mat-icon aria-hidden="true">upload_file</mat-icon>
-      <span>Import</span>
-    </button>
+      <span>Import / Export</span>
+    </a>
 
     <a
       routerLink="/you"
