@@ -1,39 +1,219 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
+
+// Google Fonts — Importrad design system
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+// =========================================================
+//  Importrad Design Tokens
+// =========================================================
+:root {
+  // ---------- Color: surfaces & ink ----------
+  --paper:         oklch(0.965 0.018 78);
+  --paper-raised:  oklch(0.985 0.012 80);
+  --paper-sunk:    oklch(0.94  0.022 76);
+  --ink:           oklch(0.22  0.025 40);
+  --ink-soft:      oklch(0.42  0.03  40);
+  --ink-faint:     oklch(0.62  0.025 40);
+
+  // ---------- Color: brand & semantic ----------
+  --terracotta:    oklch(0.6   0.15  38);
+  --terracotta-dk: oklch(0.52  0.16  35);
+  --terracotta-lt: oklch(0.92  0.04  45);
+  --amber:         oklch(0.78  0.14  75);
+  --amber-lt:      oklch(0.93  0.06  85);
+  --sage:          oklch(0.6   0.08 145);
+  --sage-lt:       oklch(0.93  0.04 145);
+  --rust:          oklch(0.5   0.18  28);
+  --rust-lt:       oklch(0.92  0.05  28);
+
+  // ---------- Borders ----------
+  --border:         rgba(42, 30, 21, 0.08);
+  --border-strong:  rgba(42, 30, 21, 0.16);
+  --border-focus:   oklch(0.6 0.15 38 / 0.5);
+
+  // ---------- Type families ----------
+  --font-display: 'Newsreader', 'Source Serif Pro', Georgia, serif;
+  --font-body:    'Manrope', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  // ---------- Type scale ----------
+  --fs-display:  64px;
+  --fs-h1:       40px;
+  --fs-h2:       28px;
+  --fs-h3:       22px;
+  --fs-h4:       18px;
+  --fs-body:     16px;
+  --fs-body-lg:  18px;
+  --fs-small:    14px;
+  --fs-micro:    12px;
+
+  // ---------- Line height ----------
+  --lh-tight:    1.1;
+  --lh-snug:     1.25;
+  --lh-normal:   1.45;
+  --lh-relaxed:  1.6;
+
+  // ---------- Letter spacing ----------
+  --tr-tight:    -0.02em;
+  --tr-normal:    0;
+  --tr-wide:      0.04em;
+  --tr-caps:      0.08em;
+
+  // ---------- Spacing (8pt base) ----------
+  --s-0:   2px;
+  --s-1:   4px;
+  --s-2:   8px;
+  --s-3:  12px;
+  --s-4:  16px;
+  --s-5:  24px;
+  --s-6:  32px;
+  --s-7:  48px;
+  --s-8:  64px;
+  --s-9:  96px;
+
+  // ---------- Radii ----------
+  --r-1:    4px;
+  --r-2:    8px;
+  --r-3:   12px;
+  --r-4:   16px;
+  --r-pill: 999px;
+
+  // ---------- Shadows ----------
+  --shadow-1: 0 1px 0 rgba(42,30,21,0.04), 0 1px 2px rgba(42,30,21,0.06);
+  --shadow-2: 0 2px 8px rgba(42,30,21,0.08), 0 1px 2px rgba(42,30,21,0.06);
+  --shadow-3: 0 12px 32px rgba(42,30,21,0.12), 0 4px 8px rgba(42,30,21,0.08);
+
+  // ---------- Motion ----------
+  --ease-out:    cubic-bezier(0.2, 0.7, 0.25, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur:      200ms;
+  --dur-slow: 320ms;
+
+  // ---------- Layout ----------
+  --gutter:        20px;
+  --gutter-reader: 24px;
+  --tab-bar-h:     64px;
+  --header-h:      56px;
+  --max-w-reader:  640px;
+}
 
 html {
   height: 100%;
+  // Reskin Angular Material using our terracotta palette
   @include mat.theme(
     (
       color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
+        primary: mat.$orange-palette,
+        tertiary: mat.$rose-palette,
       ),
-      typography: Roboto,
+      typography: Manrope,
       density: 0,
     )
   );
 }
 
+// Override Material CSS variables with our design tokens
+html {
+  --mat-sys-primary: var(--terracotta);
+  --mat-sys-on-primary: #fff;
+  --mat-sys-surface: var(--paper);
+  --mat-sys-on-surface: var(--ink);
+  --mat-sys-surface-variant: var(--paper-raised);
+  --mat-sys-outline: var(--border-strong);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
   color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
   margin: 0;
   height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
-/* You can add global styles to this file, and also import other style files */
+
+::selection { background: var(--amber-lt); color: var(--ink); }
+
+// =========================================================
+//  Semantic typographic classes
+// =========================================================
+.t-label {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--tr-caps);
+  color: var(--ink-faint);
+}
+
+// =========================================================
+//  Shared component styles
+// =========================================================
+
+// Icon button
+.ir-icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 999px;
+  background: transparent;
+  border: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--ink);
+  transition: background var(--dur-fast) var(--ease-out);
+
+  &:hover { background: var(--paper-sunk); }
+  &:active { transform: scale(0.94); }
+
+  mat-icon { font-size: 22px; width: 22px; height: 22px; }
+}
+
+// Capsule buttons
+.ir-btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15px;
+  border-radius: 999px;
+  padding: 13px 22px;
+  border: none;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out);
+  line-height: 1;
+
+  &.primary {
+    background: var(--terracotta);
+    color: #fff;
+    &:hover { background: var(--terracotta-dk); }
+    &:active { transform: scale(0.98); filter: brightness(0.94); }
+  }
+
+  &.ghost {
+    background: transparent;
+    color: var(--terracotta);
+    padding: 10px 14px;
+    &:hover { background: var(--terracotta-lt); }
+    &:focus-visible { outline: 2px solid oklch(0.6 0.15 38 / 0.5); outline-offset: 2px; }
+  }
+
+  &.full { width: 100%; }
+}
+
+// Empty state
+.ir-empty {
+  text-align: center;
+  padding: var(--s-7) var(--s-4);
+  color: var(--ink-soft);
+  font-size: 14px;
+
+  .t {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--ink);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+}

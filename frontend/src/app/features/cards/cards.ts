@@ -1,18 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTableModule } from '@angular/material/table';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { CardDialog, CardDialogData, CardDialogResult } from './card-dialog';
-import { ImportDialog } from './import-dialog';
 import { Card } from './card.model';
 import { CardService } from './card.service';
 
 @Component({
   selector: 'app-cards',
-  imports: [MatTableModule, MatButtonModule, MatIconModule, MatToolbarModule],
+  imports: [MatButtonModule, MatIconModule],
   templateUrl: './cards.html',
   styleUrl: './cards.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,29 +20,23 @@ export class Cards implements OnInit {
   private readonly snackBar = inject(MatSnackBar);
 
   readonly cards = signal<Card[]>([]);
-  readonly columns = ['english', 'french', 'actions'];
+
+  constructor() {
+    effect(() => {
+      // Re-run load whenever reloadTrigger changes (including initial value 0).
+      this.cardService.reloadTrigger();
+      this.load();
+    });
+  }
 
   ngOnInit(): void {
-    this.load();
+    // Initial load is now driven by the effect above.
   }
 
   private load(): void {
     this.cardService.getAll().subscribe({
       next: (cards) => this.cards.set(cards),
       error: () => this.snackBar.open('Failed to load cards', 'Dismiss', { duration: 3000 }),
-    });
-  }
-
-  openImport(): void {
-    const ref = this.dialog.open<ImportDialog, void, { imported: number; skipped: number }>(ImportDialog, {
-      width: '360px',
-    });
-
-    ref.afterClosed().subscribe((result) => {
-      if (result != null) {
-        this.load();
-        this.snackBar.open(`Imported ${result.imported}, skipped ${result.skipped}`, 'Dismiss', { duration: 3000 });
-      }
     });
   }
 
