@@ -9,7 +9,6 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
-  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -18,6 +17,7 @@ import { CardService, ImportResult } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { CardResponseDto } from './dto/card-response.dto';
+import { DefinitionResult } from './definition.service';
 import { PLACEHOLDER_USER_ID } from './constants';
 
 @Controller('cards')
@@ -52,14 +52,8 @@ export class CardController {
   }
 
   @Get(':id/definition')
-  getDefinition(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query('lang') lang: string,
-  ): Promise<{ definition: string }> {
-    if (lang !== 'en' && lang !== 'fr') {
-      throw new BadRequestException('lang must be "en" or "fr"');
-    }
-    return this.cardService.getDefinition(id, lang as 'en' | 'fr');
+  getDefinition(@Param('id', ParseUUIDPipe) id: string): Promise<DefinitionResult> {
+    return this.cardService.getDefinition(id);
   }
 
   @Patch(':id')

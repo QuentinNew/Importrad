@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Card, CreateCardPayload, UpdateCardPayload } from './card.model';
+import { Card, CreateCardPayload, UpdateCardPayload, DefinitionResult } from './card.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -38,9 +38,7 @@ export class CardService {
     return this.http.post<{ imported: number; skipped: number }>(`${this.base}/import`, form);
   }
 
-  getDefinition(cardId: string, lang: 'en' | 'fr'): Observable<{ definition: string }> {
-    return this.http.get<{ definition: string }>(`${this.base}/${cardId}/definition`, {
-      params: { lang },
-    });
+  getDefinition(cardId: string): Observable<DefinitionResult> {
+    return this.http.get<DefinitionResult>(`${this.base}/${cardId}/definition`);
   }
 }

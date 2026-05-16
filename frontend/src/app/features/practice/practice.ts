@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, computed, i
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Card } from '../cards/card.model';
+import { Card, DefinitionEntry } from '../cards/card.model';
 import { CardService } from '../cards/card.service';
 import { CardDialog, CardDialogData, CardDialogResult } from '../cards/card-dialog';
 
@@ -25,10 +25,9 @@ export class Practice implements OnInit {
   readonly cards = signal<Card[]>([]);
   readonly currentIndex = signal(0);
   readonly revealed = signal(false);
-  readonly definitionEn = signal<string | null>(null);
-  readonly definitionFr = signal<string | null>(null);
-  readonly loadingEn = signal(false);
-  readonly loadingFr = signal(false);
+  readonly definitions = signal<DefinitionEntry[]>([]);
+  readonly synonyms = signal<string[]>([]);
+  readonly loadingDefinition = signal(false);
 
   readonly currentCard = computed(() => {
     const list = this.cards();
@@ -45,7 +44,7 @@ export class Practice implements OnInit {
   });
 
   ngOnInit(): void {
-    this.cardService.getAll().subscribe({
+    this.cardService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (cards) => {
         this.cards.set(this.shuffle([...cards]));
       },
@@ -60,8 +59,7 @@ export class Practice implements OnInit {
   next(): void {
     this.currentIndex.update((i) => i + 1);
     this.revealed.set(false);
-    this.definitionEn.set(null);
-    this.definitionFr.set(null);
+    this.resetDefinition();
     setTimeout(() => (this.revealBtn()?.nativeElement ?? this.cardStage()?.nativeElement)?.focus(), 0);
   }
 
@@ -69,42 +67,26 @@ export class Practice implements OnInit {
     this.cards.update((list) => this.shuffle([...list]));
     this.currentIndex.set(0);
     this.revealed.set(false);
-    this.definitionEn.set(null);
-    this.definitionFr.set(null);
+    this.resetDefinition();
     setTimeout(() => (this.revealBtn()?.nativeElement ?? this.cardStage()?.nativeElement)?.focus(), 0);
   }
 
-  lookupDefinition(lang: 'en' | 'fr'): void {
+  lookupDefinition(): void {
     const card = this.currentCard();
-    if (!card) return;
+    if (!card || this.loadingDefinition() || this.definitions().length > 0) return;
 
-    if (lang === 'en') {
-      if (this.loadingEn()) return;
-      this.loadingEn.set(true);
-      this.cardService.getDefinition(card.id, 'en').subscribe({
-        next: ({ definition }) => {
-          this.definitionEn.set(definition);
-          this.loadingEn.set(false);
-        },
-        error: () => {
-          this.snackBar.open('Failed to load definition', 'Dismiss', { duration: 3000 });
-          this.loadingEn.set(false);
-        },
-      });
-    } else {
-      if (this.loadingFr()) return;
-      this.loadingFr.set(true);
-      this.cardService.getDefinition(card.id, 'fr').subscribe({
-        next: ({ definition }) => {
-          this.definitionFr.set(definition);
-          this.loadingFr.set(false);
-        },
-        error: () => {
-          this.snackBar.open('Failed to load definition', 'Dismiss', { duration: 3000 });
-          this.loadingFr.set(false);
-        },
-      });
-    }
+    this.loadingDefinition.set(true);
+    this.cardService.getDefinition(card.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (result) => {
+        this.definitions.set(result.definitions);
+        this.synonyms.set(result.synonyms);
+        this.loadingDefinition.set(false);
+      },
+      error: () => {
+        this.snackBar.open('No definition found for this word', 'Dismiss', { duration: 3000 });
+        this.loadingDefinition.set(false);
+      },
+    });
   }
 
   openEdit(): void {
@@ -126,6 +108,11 @@ export class Practice implements OnInit {
         error: () => this.snackBar.open('Failed to update card', 'Dismiss', { duration: 3000 }),
       });
     });
+  }
+
+  private resetDefinition(): void {
+    this.definitions.set([]);
+    this.synonyms.set([]);
   }
 
   private shuffle<T>(arr: T[]): T[] {

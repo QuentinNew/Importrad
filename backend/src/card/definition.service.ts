@@ -1,64 +1,72 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
-import { CardRepository } from './card.repository';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 
-const NVIDIA_BASE_URL = 'https://integrate.api.nvidia.com/v1';
-const NVIDIA_MODEL = 'meta/llama-3.1-8b-instruct';
+export interface DefinitionEntry {
+  partOfSpeech: string;
+  text: string;
+  example: string | null;
+}
+
+export interface DefinitionResult {
+  definitions: DefinitionEntry[];
+  synonyms: string[];
+}
 
 @Injectable()
 export class DefinitionService {
-  private readonly logger = new Logger(DefinitionService.name);
-
-  constructor(private readonly cardRepository: CardRepository) {}
-
-  async getDefinition(
-    id: string,
-    word: string,
-    lang: 'en' | 'fr',
-    cached: string | null,
-  ): Promise<string> {
-    if (cached) {
-      return cached;
+  async fetchDefinition(word: string): Promise<DefinitionResult> {
+    const lookup = word.replace(/^to\s+/i, '');
+    let response: Response;
+    try {
+      response = await fetch(
+        `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(lookup)}`,
+        { signal: AbortSignal.timeout(5000) },
+      );
+    } catch {
+      throw new InternalServerErrorException('Dictionary API unreachable');
     }
 
-    const definition = await this.fetchFromLlm(word, lang);
-    await this.cardRepository.updateDefinition(id, lang, definition);
-    return definition;
-  }
-
-  private async fetchFromLlm(word: string, lang: 'en' | 'fr'): Promise<string> {
-    const apiKey = process.env.NVIDIA_API_KEY;
-    if (!apiKey) {
-      throw new InternalServerErrorException('NVIDIA_API_KEY is not configured');
+    if (response.status === 404) {
+      throw new NotFoundException(`No definition found for "${word}"`);
     }
-
-    const language = lang === 'en' ? 'English' : 'French';
-    const prompt = `Give a short definition and one example sentence for the ${language} word/phrase "${word}". Respond in ${language} only. Format: Definition: ... Example: ...`;
-
-    const response = await fetch(`${NVIDIA_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: NVIDIA_MODEL,
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 200,
-        temperature: 0.3,
-      }),
-    });
 
     if (!response.ok) {
-      const text = await response.text();
-      this.logger.error(`NVIDIA API error ${response.status}: ${text}`);
-      throw new InternalServerErrorException('Failed to fetch definition from LLM');
+      throw new InternalServerErrorException('Dictionary API request failed');
     }
 
-    const data = (await response.json()) as { choices: { message: { content: string } }[] };
-    const content = data?.choices?.[0]?.message?.content;
-    if (!content) {
-      throw new InternalServerErrorException('Empty response from LLM');
-    }
-    return content.trim();
+    const data = (await response.json()) as DictionaryApiResponse[];
+    return parse(data);
   }
+}
+
+interface DictionaryApiResponse {
+  meanings: {
+    partOfSpeech: string;
+    definitions: {
+      definition: string;
+      example?: string;
+      synonyms: string[];
+    }[];
+    synonyms: string[];
+  }[];
+}
+
+function parse(data: DictionaryApiResponse[]): DefinitionResult {
+  const meanings = data[0].meanings;
+
+  const definitions: DefinitionEntry[] = meanings.flatMap((m) =>
+    m.definitions.map((d) => ({
+      partOfSpeech: m.partOfSpeech,
+      text: d.definition,
+      example: d.example ?? null,
+    })),
+  );
+
+  const synonyms = [
+    ...new Set([
+      ...meanings.flatMap((m) => m.synonyms),
+      ...meanings.flatMap((m) => m.definitions.flatMap((d) => d.synonyms)),
+    ]),
+  ].slice(0, 5);
+
+  return { definitions, synonyms };
 }

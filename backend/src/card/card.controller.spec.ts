@@ -32,11 +32,10 @@ const mockCardRepository = {
   findByEnglishAndFrench: jest.fn(),
   findUserAnchor: jest.fn(),
   updateUserAnchor: jest.fn(),
-  updateDefinition: jest.fn(),
 };
 
 const mockDefinitionService = {
-  getDefinition: jest.fn(),
+  fetchDefinition: jest.fn(),
 };
 
 async function buildApp() {
@@ -238,45 +237,29 @@ describe('CardController', () => {
   });
 
   describe('GET /cards/:id/definition', () => {
-    it('returns 200 with definition when lang=en', async () => {
-      mockCardRepository.findById.mockResolvedValue({ ...mockCard, definitionEn: null, definitionFr: null });
-      mockDefinitionService.getDefinition.mockResolvedValue('A friendly greeting.');
+    const definitionResult = {
+      definitions: [
+        { partOfSpeech: 'exclamation', text: 'used as a greeting.', example: 'Hello there!' },
+      ],
+      synonyms: ['hi', 'hey'],
+    };
+
+    it('returns 200 with definition, synonyms and example', async () => {
+      mockCardRepository.findById.mockResolvedValue(mockCard);
+      mockDefinitionService.fetchDefinition.mockResolvedValue(definitionResult);
 
       const response = await request(app.getHttpServer())
-        .get(`/cards/${mockCard.id}/definition?lang=en`)
-        .expect(200);
-
-      expect(response.body).toEqual({ definition: 'A friendly greeting.' });
-    });
-
-    it('returns 200 with definition when lang=fr', async () => {
-      mockCardRepository.findById.mockResolvedValue({ ...mockCard, definitionEn: null, definitionFr: null });
-      mockDefinitionService.getDefinition.mockResolvedValue('Une salutation amicale.');
-
-      const response = await request(app.getHttpServer())
-        .get(`/cards/${mockCard.id}/definition?lang=fr`)
-        .expect(200);
-
-      expect(response.body).toEqual({ definition: 'Une salutation amicale.' });
-    });
-
-    it('returns 400 when lang param is invalid', async () => {
-      await request(app.getHttpServer())
-        .get(`/cards/${mockCard.id}/definition?lang=es`)
-        .expect(400);
-    });
-
-    it('returns 400 when lang param is missing', async () => {
-      await request(app.getHttpServer())
         .get(`/cards/${mockCard.id}/definition`)
-        .expect(400);
+        .expect(200);
+
+      expect(response.body).toEqual(definitionResult);
     });
 
     it('returns 404 when card does not exist', async () => {
       mockCardRepository.findById.mockResolvedValue(null);
 
       await request(app.getHttpServer())
-        .get(`/cards/${mockCard.id}/definition?lang=en`)
+        .get(`/cards/${mockCard.id}/definition`)
         .expect(404);
     });
   });

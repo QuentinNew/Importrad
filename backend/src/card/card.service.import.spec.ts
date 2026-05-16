@@ -13,11 +13,10 @@ const mockRepository = {
   findByEnglishAndFrench: jest.fn(),
   findUserAnchor: jest.fn(),
   updateUserAnchor: jest.fn(),
-  updateDefinition: jest.fn(),
 };
 
 const mockDefinitionService = {
-  getDefinition: jest.fn(),
+  fetchDefinition: jest.fn(),
 } as unknown as DefinitionService;
 
 function makeService() {

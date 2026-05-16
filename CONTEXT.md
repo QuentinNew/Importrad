@@ -2,7 +2,7 @@
 
 ## Purpose
 
-A mobile-first flashcard web app for English↔French vocabulary learning. Users import saved Google Translate CSV files and study words using spaced repetition, with optional AI-powered follow-up prompts per card.
+A mobile-first flashcard web app for English↔French vocabulary learning. Users import saved Google Translate CSV files and study words using spaced repetition, with optional dictionary lookups per card during Practice.
 
 ---
 
@@ -21,7 +21,7 @@ A study event where the User sees one side of a Card and grades their recall usi
 Whether a Review shows the English side (prompting for French) or the French side (prompting for English). Configurable per User, defaults to EN→FR. Both directions can be mixed.
 
 ### Practice
-A session where the User studies cards one at a time from their Pool. Cards are presented in random order. The User sees the English side first, taps to reveal the French side, then advances to the next card. No grading is recorded — Practice is a lightweight study tool, distinct from a scored Review.
+A session where the User studies cards one at a time from their Pool. Cards are presented in random order. The User sees the English side first, taps to reveal the French side, then advances to the next card. After reveal, the User can look up the English Definition inline. No grading is recorded — Practice is a lightweight study tool, distinct from a scored Review.
 
 ### Algorithm
 The logic that takes a Card's history to focus difficult. Not defined yet.
@@ -37,11 +37,8 @@ A bulk operation that parses a CSV file and creates Cards from it. Each row is `
 ### Import Anchor
 The first row of the most recently uploaded CSV, stored per User. On the next import, processing stops when this row is encountered — modelling the fact that Google Translate exports are append-only (new words are prepended to the same file). Updated unconditionally after every import. If the anchor row is absent from the new file, all rows are processed and the anchor resets to the new file's first row.
 
-### AI Prompt
-A curated, fixed-choice action available on any Card during Practice or Review. Examples: "Definition in French", "Definition in English". Implemented as calls to the NVIDIA LLM API (OpenAI-compatible). The interface is abstracted so the provider can be swapped without changing card or review logic.
-
 ### Definition
-An AI-generated explanation of a Card's word or phrase in a single language, consisting of a short dictionary-style definition and one example sentence. Stored per Card per language (`definitionEn`, `definitionFr`) and fetched on demand — the backend returns the cached value if it exists, otherwise calls the LLM, stores the result, and returns it. Definitions are not regenerated once cached.
+An on-demand English dictionary lookup for a Card's English word, available after reveal in Practice mode. Returns a definition, up to five synonyms, and an example sentence sourced from the free dictionaryapi.dev API. Not stored — fetched fresh on each request.
 
 ### User
 An authenticated person identified by Google OAuth. Each User owns their own Pool and preference. No email/password auth.
@@ -75,9 +72,10 @@ A global NestJS module (`@Global()`) that provides `PrismaService` — the singl
 
 ### CardModule
 The NestJS feature module that owns all Card-related API behavior. Contains:
-- `CardController` — HTTP boundary (`POST /cards`, `GET /cards/:id`)
+- `CardController` — HTTP boundary (`POST /cards`, `GET /cards/:id`, `GET /cards/:id/definition`)
 - `CardService` — business logic
 - `CardRepository` — all Prisma calls for Cards; injected into `CardService` and mocked in unit tests
+- `DefinitionService` — pure dictionary adapter; calls dictionaryapi.dev and returns a `DefinitionResult`; no DB access
 
 ### DTO layer
 - `CreateCardDto` — validated request body for card creation (`userId`, `english`, `french`); uses `class-validator`

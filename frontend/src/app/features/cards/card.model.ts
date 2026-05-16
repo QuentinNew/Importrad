@@ -3,10 +3,19 @@ export interface Card {
   userId: string | null;
   english: string;
   french: string;
-  definitionEn?: string;
-  definitionFr?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface DefinitionEntry {
+  partOfSpeech: string;
+  text: string;
+  example: string | null;
+}
+
+export interface DefinitionResult {
+  definitions: DefinitionEntry[];
+  synonyms: string[];
 }
 
 export interface CreateCardPayload {

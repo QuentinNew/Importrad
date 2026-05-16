@@ -1,6 +1,27 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { InternalServerErrorException } from '@nestjs/common';
+import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DefinitionService } from './definition.service';
+
+const MOCK_RESPONSE = [
+  {
+    meanings: [
+      {
+        partOfSpeech: 'noun',
+        definitions: [
+          { definition: 'The act of clambering.', example: null, synonyms: [] },
+        ],
+        synonyms: [],
+      },
+      {
+        partOfSpeech: 'verb',
+        definitions: [
+          { definition: 'To climb with difficulty.', example: 'She clambered up.', synonyms: ['scramble'] },
+        ],
+        synonyms: ['climb'],
+      },
+    ],
+  },
+];
 
 describe('DefinitionService', () => {
   let service: DefinitionService;
@@ -14,90 +35,113 @@ describe('DefinitionService', () => {
     jest.resetAllMocks();
   });
 
-  afterEach(() => {
-    delete process.env.NVIDIA_API_KEY;
-  });
-
   describe('fetchDefinition', () => {
-    it('throws when NVIDIA_API_KEY is not set', async () => {
-      await expect(service.fetchDefinition('hello', 'en')).rejects.toThrow(
-        InternalServerErrorException,
-      );
-    });
-
-    it('returns trimmed LLM content for English word', async () => {
-      process.env.NVIDIA_API_KEY = 'test-key';
-
+    it('returns all definitions grouped by part of speech', async () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue({
-          choices: [{ message: { content: '  Definition: A greeting. Example: Hello, world!  ' } }],
-        }),
+        status: 200,
+        json: jest.fn().mockResolvedValue(MOCK_RESPONSE),
       }) as unknown as typeof fetch;
 
-      const result = await service.fetchDefinition('hello', 'en');
+      const result = await service.fetchDefinition('clamber');
 
-      expect(result).toBe('Definition: A greeting. Example: Hello, world!');
+      expect(result.definitions).toEqual([
+        { partOfSpeech: 'noun', text: 'The act of clambering.', example: null },
+        { partOfSpeech: 'verb', text: 'To climb with difficulty.', example: 'She clambered up.' },
+      ]);
     });
 
-    it('sends French language prompt for lang=fr', async () => {
-      process.env.NVIDIA_API_KEY = 'test-key';
+    it('collects synonyms from both meaning-level and definition-level', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(MOCK_RESPONSE),
+      }) as unknown as typeof fetch;
 
+      const result = await service.fetchDefinition('clamber');
+
+      expect(result.synonyms).toContain('climb');
+      expect(result.synonyms).toContain('scramble');
+    });
+
+    it('strips leading "to " before the API call', async () => {
       const fetchMock = jest.fn().mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue({
-          choices: [{ message: { content: 'Définition: Une salutation. Exemple: Bonjour le monde!' } }],
-        }),
+        status: 200,
+        json: jest.fn().mockResolvedValue(MOCK_RESPONSE),
       });
       global.fetch = fetchMock as unknown as typeof fetch;
 
-      await service.fetchDefinition('bonjour', 'fr');
+      await service.fetchDefinition('to clamber');
 
-      const callBody = JSON.parse(fetchMock.mock.calls[0][1].body as string);
-      expect(callBody.messages[0].content).toContain('French');
-      expect(callBody.messages[0].content).toContain('bonjour');
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.dictionaryapi.dev/api/v2/entries/en/clamber',
+      );
     });
 
-    it('throws when LLM returns a non-ok response', async () => {
-      process.env.NVIDIA_API_KEY = 'test-key';
+    it('strips "to " case-insensitively', async () => {
+      const fetchMock = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(MOCK_RESPONSE),
+      });
+      global.fetch = fetchMock as unknown as typeof fetch;
 
+      await service.fetchDefinition('To Clamber');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.dictionaryapi.dev/api/v2/entries/en/Clamber',
+      );
+    });
+
+    it('deduplicates synonyms and limits to 5', async () => {
+      const response = [
+        {
+          meanings: [
+            {
+              partOfSpeech: 'verb',
+              definitions: [
+                { definition: 'def', example: null, synonyms: ['a', 'b', 'c'] },
+              ],
+              synonyms: ['b', 'd', 'e', 'f'],
+            },
+          ],
+        },
+      ];
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(response),
+      }) as unknown as typeof fetch;
+
+      const result = await service.fetchDefinition('word');
+
+      expect(result.synonyms).toHaveLength(5);
+      expect(new Set(result.synonyms).size).toBe(5);
+    });
+
+    it('throws InternalServerErrorException when fetch throws (network error / timeout)', async () => {
+      global.fetch = jest.fn().mockRejectedValue(new TypeError('fetch failed')) as unknown as typeof fetch;
+
+      await expect(service.fetchDefinition('hello')).rejects.toThrow(InternalServerErrorException);
+    });
+
+    it('throws NotFoundException when word is not found (404)', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+      }) as unknown as typeof fetch;
+
+      await expect(service.fetchDefinition('xyzzy')).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws InternalServerErrorException on non-404 API error', async () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 500,
-        text: jest.fn().mockResolvedValue('Internal error'),
       }) as unknown as typeof fetch;
 
-      await expect(service.fetchDefinition('hello', 'en')).rejects.toThrow(
-        InternalServerErrorException,
-      );
-    });
-
-    it('throws when LLM returns empty choices', async () => {
-      process.env.NVIDIA_API_KEY = 'test-key';
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue({ choices: [] }),
-      }) as unknown as typeof fetch;
-
-      await expect(service.fetchDefinition('hello', 'en')).rejects.toThrow(
-        InternalServerErrorException,
-      );
-    });
-
-    it('throws when LLM response is too short to be a valid definition', async () => {
-      process.env.NVIDIA_API_KEY = 'test-key';
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          choices: [{ message: { content: 'Hi' } }],
-        }),
-      }) as unknown as typeof fetch;
-
-      await expect(service.fetchDefinition('hello', 'en')).rejects.toThrow(
-        InternalServerErrorException,
-      );
+      await expect(service.fetchDefinition('hello')).rejects.toThrow(InternalServerErrorException);
     });
   });
 });
