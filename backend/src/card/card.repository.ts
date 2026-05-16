@@ -33,6 +33,10 @@ export class CardRepository {
     return this.prisma.card.delete({ where: { id } });
   }
 
+  async deleteAll(): Promise<void> {
+    await this.prisma.card.deleteMany({});
+  }
+
   findByEnglishAndFrench(english: string, french: string): Promise<Card | null> {
     return this.prisma.card.findFirst({
       where: {
@@ -40,5 +44,19 @@ export class CardRepository {
         french: { equals: french, mode: 'insensitive' },
       },
     });
+  }
+
+  findUserAnchor(userId: string): Promise<{ anchorEnglish: string | null; anchorFrench: string | null } | null> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { anchorEnglish: true, anchorFrench: true },
+    });
+  }
+
+  updateUserAnchor(userId: string, anchorEnglish: string, anchorFrench: string): Promise<void> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { anchorEnglish, anchorFrench },
+    }).then(() => undefined);
   }
 }

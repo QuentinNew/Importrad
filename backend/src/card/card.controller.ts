@@ -17,6 +17,7 @@ import { CardService, ImportResult } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { CardResponseDto } from './dto/card-response.dto';
+import { PLACEHOLDER_USER_ID } from './constants';
 
 @Controller('cards')
 export class CardController {
@@ -31,7 +32,7 @@ export class CardController {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
-    return this.cardService.importCsv(file.buffer, userId);
+    return this.cardService.importCsv(file.buffer, userId ?? PLACEHOLDER_USER_ID);
   }
 
   @Post()
@@ -55,6 +56,12 @@ export class CardController {
     @Body() dto: UpdateCardDto,
   ): Promise<CardResponseDto> {
     return this.cardService.update(id, dto);
+  }
+
+  @Delete()
+  @HttpCode(204)
+  deleteAll(): Promise<void> {
+    return this.cardService.deleteAll();
   }
 
   @Delete(':id')

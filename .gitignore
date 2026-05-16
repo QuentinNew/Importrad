@@ -5,6 +5,8 @@ sample/**/package-lock.json
 dist/
 # dependencies
 node_modules/
+node_modules.win/
+node_modules.wsl/
 
 # IDE
 .env
