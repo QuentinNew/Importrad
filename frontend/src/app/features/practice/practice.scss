@@ -105,6 +105,14 @@
   gap: var(--s-4);
 }
 
+.reveal-actions {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+}
+
 .card-counter {
   text-align: center;
   font-family: var(--font-body);
