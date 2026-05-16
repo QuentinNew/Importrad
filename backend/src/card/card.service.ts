@@ -9,6 +9,7 @@ import { CardResponseDto } from './dto/card-response.dto';
 
 export interface ImportResult {
   imported: number;
+  failed: { english: string; french: string }[];
   skipped: number;
 }
 
@@ -49,6 +50,10 @@ export class CardService {
     }
   }
 
+  async deleteAll(): Promise<void> {
+    await this.cardRepository.deleteAll();
+  }
+
   async delete(id: string): Promise<void> {
     try {
       await this.cardRepository.delete(id);
@@ -63,22 +68,47 @@ export class CardService {
     const rows = this.csvParser.parse(csvText); // throws BadRequestException on unknown language
 
     let imported = 0;
+    const failed: { english: string; french: string }[] = [];
     let skipped = 0;
 
-    for (const row of rows) {
-      const existing = await this.cardRepository.findByEnglishAndFrench(
-        row.english,
-        row.french,
-      );
-      if (existing) {
-        skipped++;
-        continue;
-      }
-      await this.cardRepository.create({ english: row.english, french: row.french, userId } as CreateCardDto & { userId?: string });
-      imported++;
+    let anchorEnglish: string | null = null;
+    let anchorFrench: string | null = null;
+
+    if (userId) {
+      const anchor = await this.cardRepository.findUserAnchor(userId);
+      anchorEnglish = anchor?.anchorEnglish ?? null;
+      anchorFrench = anchor?.anchorFrench ?? null;
     }
 
-    return { imported, skipped };
+    try {
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+
+        if (
+          anchorEnglish !== null &&
+          anchorFrench !== null &&
+          row.english.toLowerCase() === anchorEnglish.toLowerCase() &&
+          row.french.toLowerCase() === anchorFrench.toLowerCase()
+        ) {
+          skipped = rows.length - i;
+          break;
+        }
+
+        const existing = await this.cardRepository.findByEnglishAndFrench(row.english, row.french);
+        if (existing) {
+          failed.push({ english: row.english, french: row.french });
+          continue;
+        }
+        await this.cardRepository.create({ english: row.english, french: row.french, userId } as CreateCardDto & { userId?: string });
+        imported++;
+      }
+    } finally {
+      if (userId && rows.length > 0) {
+        await this.cardRepository.updateUserAnchor(userId, rows[0].english, rows[0].french);
+      }
+    }
+
+    return { imported, failed, skipped };
   }
 }
 

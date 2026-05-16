@@ -27,7 +27,10 @@ const mockCardRepository = {
   findById: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
+  deleteAll: jest.fn(),
   findByEnglishAndFrench: jest.fn(),
+  findUserAnchor: jest.fn(),
+  updateUserAnchor: jest.fn(),
 };
 
 async function buildApp() {
@@ -164,8 +167,20 @@ describe('CardController', () => {
     });
   });
 
+  describe('DELETE /cards', () => {
+    it('returns 204 and deletes all cards', async () => {
+      mockCardRepository.deleteAll.mockResolvedValue(undefined);
+
+      await request(app.getHttpServer())
+        .delete('/cards')
+        .expect(204);
+
+      expect(mockCardRepository.deleteAll).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('POST /cards/import', () => {
-    it('returns 201 with { imported, skipped } on a valid CSV upload', async () => {
+    it('returns 201 with { imported, failed, skipped } on a valid CSV upload', async () => {
       mockCardRepository.findByEnglishAndFrench.mockResolvedValue(null);
       mockCardRepository.create.mockResolvedValue(mockCard);
 
@@ -176,10 +191,10 @@ describe('CardController', () => {
         .attach('file', Buffer.from(csv), { filename: 'words.csv', contentType: 'text/csv' })
         .expect(201);
 
-      expect(response.body).toEqual({ imported: 1, skipped: 0 });
+      expect(response.body).toEqual({ imported: 1, failed: [], skipped: 0 });
     });
 
-    it('skips duplicate rows and reports correct counts', async () => {
+    it('puts duplicate rows in failed[] and reports correct counts', async () => {
       mockCardRepository.findByEnglishAndFrench
         .mockResolvedValueOnce(mockCard) // first row is a duplicate
         .mockResolvedValueOnce(null);     // second row is new
@@ -192,7 +207,11 @@ describe('CardController', () => {
         .attach('file', Buffer.from(csv), { filename: 'words.csv', contentType: 'text/csv' })
         .expect(201);
 
-      expect(response.body).toEqual({ imported: 1, skipped: 1 });
+      expect(response.body).toEqual({
+        imported: 1,
+        failed: [{ english: 'hello', french: 'bonjour' }],
+        skipped: 0,
+      });
     });
 
     it('returns 400 when CSV contains an unknown language', async () => {
