@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -21,8 +21,16 @@ export class Cards implements OnInit {
 
   readonly cards = signal<Card[]>([]);
 
+  constructor() {
+    effect(() => {
+      // Re-run load whenever reloadTrigger changes (including initial value 0).
+      this.cardService.reloadTrigger();
+      this.load();
+    });
+  }
+
   ngOnInit(): void {
-    this.load();
+    // Initial load is now driven by the effect above.
   }
 
   private load(): void {

@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Card, CreateCardPayload, UpdateCardPayload } from './card.model';
@@ -8,6 +8,13 @@ import { environment } from '../../../environments/environment';
 export class CardService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/api/cards`;
+
+  /** Increment to trigger a reload in the Cards list component. */
+  readonly reloadTrigger = signal(0);
+
+  triggerReload(): void {
+    this.reloadTrigger.update((n) => n + 1);
+  }
 
   getAll(): Observable<Card[]> {
     return this.http.get<Card[]>(this.base);

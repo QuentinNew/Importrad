@@ -1,12 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, inject, OnInit, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Card } from '../cards/card.model';
 import { CardService } from '../cards/card.service';
 
 @Component({
   selector: 'app-practice',
-  imports: [MatIconModule],
+  imports: [],
   templateUrl: './practice.html',
   styleUrl: './practice.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -14,6 +13,9 @@ import { CardService } from '../cards/card.service';
 export class Practice implements OnInit {
   private readonly cardService = inject(CardService);
   private readonly snackBar = inject(MatSnackBar);
+
+  @ViewChild('revealBtn') revealBtn?: ElementRef<HTMLButtonElement>;
+  @ViewChild('cardStage') cardStage?: ElementRef<HTMLDivElement>;
 
   readonly cards = signal<Card[]>([]);
   readonly currentIndex = signal(0);
@@ -49,12 +51,14 @@ export class Practice implements OnInit {
   next(): void {
     this.currentIndex.update((i) => i + 1);
     this.revealed.set(false);
+    setTimeout(() => (this.revealBtn?.nativeElement ?? this.cardStage?.nativeElement)?.focus(), 0);
   }
 
   restart(): void {
     this.cards.update((list) => this.shuffle([...list]));
     this.currentIndex.set(0);
     this.revealed.set(false);
+    setTimeout(() => (this.revealBtn?.nativeElement ?? this.cardStage?.nativeElement)?.focus(), 0);
   }
 
   private shuffle<T>(arr: T[]): T[] {

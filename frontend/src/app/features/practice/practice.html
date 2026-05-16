@@ -27,9 +27,15 @@
       </div>
 
       <div
+        #cardStage
         class="ir-flash-stage"
         role="article"
         [attr.aria-label]="'Card ' + (progress() + 1) + ' of ' + cards().length"
+        (click)="reveal()"
+        [style.cursor]="revealed() ? 'default' : 'pointer'"
+        tabindex="0"
+        (keydown.enter)="reveal()"
+        (keydown.space)="reveal()"
       >
         <span class="ir-flash-meta t-label">English</span>
 
@@ -39,8 +45,9 @@
 
         @if (!revealed()) {
           <button
+            #revealBtn
             class="ir-btn ghost"
-            (click)="reveal()"
+            (click)="$event.stopPropagation(); reveal()"
             aria-label="Tap to reveal French translation"
           >
             Tap to reveal
@@ -50,7 +57,7 @@
             <p class="ir-flash-native">{{ currentCard()?.french }}</p>
             <button
               class="ir-btn primary"
-              (click)="next()"
+              (click)="$event.stopPropagation(); next()"
               aria-label="Next card"
             >
               Next card
