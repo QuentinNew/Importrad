@@ -18,6 +18,10 @@ export class CardRepository {
     return this.prisma.card.findMany();
   }
 
+  findAllByUserId(userId: string): Promise<Card[]> {
+    return this.prisma.card.findMany({ where: { userId } });
+  }
+
   findById(id: string): Promise<Card | null> {
     return this.prisma.card.findUnique({ where: { id } });
   }

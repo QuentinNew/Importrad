@@ -41,4 +41,8 @@ export class CardService {
   getDefinition(cardId: string): Observable<DefinitionResult> {
     return this.http.get<DefinitionResult>(`${this.base}/${cardId}/definition`);
   }
+
+  exportCsv(): Observable<Blob> {
+    return this.http.get(`${this.base}/export`, { responseType: 'blob' });
+  }
 }

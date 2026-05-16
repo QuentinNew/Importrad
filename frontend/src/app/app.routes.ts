@@ -14,4 +14,8 @@ export const routes: Routes = [
     path: 'you',
     loadComponent: () => import('./features/you/you').then((m) => m.You),
   },
+  {
+    path: 'import-export',
+    loadComponent: () => import('./features/cards/import-export-page').then((m) => m.ImportExportPage),
+  },
 ];

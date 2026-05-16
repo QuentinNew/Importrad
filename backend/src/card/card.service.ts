@@ -71,6 +71,11 @@ export class CardService {
     return this.definitionService.fetchDefinition(card.english);
   }
 
+  async exportCsv(): Promise<string> {
+    const cards = await this.cardRepository.findAll();
+    return cards.map((c) => `Anglais,Français,${c.english},${c.french}`).join('\n');
+  }
+
   async importCsv(fileBuffer: Buffer, userId: string | undefined): Promise<ImportResult> {
     const csvText = fileBuffer.toString('utf-8');
     const rows = this.csvParser.parse(csvText); // throws BadRequestException on unknown language
