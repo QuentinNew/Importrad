@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, computed, inject, OnInit, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Card } from '../cards/card.model';
@@ -16,9 +17,10 @@ export class Practice implements OnInit {
   private readonly cardService = inject(CardService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly destroyRef = inject(DestroyRef);
 
-  @ViewChild('revealBtn') revealBtn?: ElementRef<HTMLButtonElement>;
-  @ViewChild('cardStage') cardStage?: ElementRef<HTMLDivElement>;
+  readonly revealBtn = viewChild<ElementRef<HTMLButtonElement>>('revealBtn');
+  readonly cardStage = viewChild<ElementRef<HTMLDivElement>>('cardStage');
 
   readonly cards = signal<Card[]>([]);
   readonly currentIndex = signal(0);
@@ -54,14 +56,14 @@ export class Practice implements OnInit {
   next(): void {
     this.currentIndex.update((i) => i + 1);
     this.revealed.set(false);
-    setTimeout(() => (this.revealBtn?.nativeElement ?? this.cardStage?.nativeElement)?.focus(), 0);
+    setTimeout(() => (this.revealBtn()?.nativeElement ?? this.cardStage()?.nativeElement)?.focus(), 0);
   }
 
   restart(): void {
     this.cards.update((list) => this.shuffle([...list]));
     this.currentIndex.set(0);
     this.revealed.set(false);
-    setTimeout(() => (this.revealBtn?.nativeElement ?? this.cardStage?.nativeElement)?.focus(), 0);
+    setTimeout(() => (this.revealBtn()?.nativeElement ?? this.cardStage()?.nativeElement)?.focus(), 0);
   }
 
   openEdit(): void {
@@ -74,14 +76,11 @@ export class Practice implements OnInit {
       data,
     });
 
-    ref.afterClosed().subscribe((result) => {
+    ref.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((result) => {
       if (!result) return;
-      this.cardService.update(card.id, result).subscribe({
+      this.cardService.update(card.id, result).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (updated) => {
-          const idx = this.currentIndex();
-          this.cards.update((list) =>
-            list.map((c, i) => (i === idx ? { ...c, ...updated } : c))
-          );
+          this.cards.update((list) => list.map((c) => (c.id === updated.id ? updated : c)));
         },
         error: () => this.snackBar.open('Failed to update card', 'Dismiss', { duration: 3000 }),
       });

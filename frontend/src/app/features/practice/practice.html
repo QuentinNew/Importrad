@@ -56,6 +56,7 @@
           <div class="reveal-block" aria-live="polite">
             <p class="ir-flash-native">{{ currentCard()?.french }}</p>
             <div class="reveal-actions">
+              <span aria-hidden="true"></span>
               <button
                 class="ir-btn primary"
                 (click)="$event.stopPropagation(); next()"
