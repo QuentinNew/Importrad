@@ -59,4 +59,5 @@ export class CardRepository {
       data: { anchorEnglish, anchorFrench },
     }).then(() => undefined);
   }
+
 }

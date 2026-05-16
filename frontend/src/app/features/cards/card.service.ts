@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Card, CreateCardPayload, UpdateCardPayload } from './card.model';
+import { Card, CreateCardPayload, UpdateCardPayload, DefinitionResult } from './card.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -36,5 +36,9 @@ export class CardService {
     const form = new FormData();
     form.append('file', file);
     return this.http.post<{ imported: number; skipped: number }>(`${this.base}/import`, form);
+  }
+
+  getDefinition(cardId: string): Observable<DefinitionResult> {
+    return this.http.get<DefinitionResult>(`${this.base}/${cardId}/definition`);
   }
 }

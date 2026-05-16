@@ -17,6 +17,7 @@ import { CardService, ImportResult } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { CardResponseDto } from './dto/card-response.dto';
+import { DefinitionResult } from './definition.service';
 import { PLACEHOLDER_USER_ID } from './constants';
 
 @Controller('cards')
@@ -48,6 +49,11 @@ export class CardController {
   @Get(':id')
   findById(@Param('id', ParseUUIDPipe) id: string): Promise<CardResponseDto> {
     return this.cardService.findById(id);
+  }
+
+  @Get(':id/definition')
+  getDefinition(@Param('id', ParseUUIDPipe) id: string): Promise<DefinitionResult> {
+    return this.cardService.getDefinition(id);
   }
 
   @Patch(':id')

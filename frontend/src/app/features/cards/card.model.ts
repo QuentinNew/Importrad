@@ -7,6 +7,17 @@ export interface Card {
   updatedAt: string;
 }
 
+export interface DefinitionEntry {
+  partOfSpeech: string;
+  text: string;
+  example: string | null;
+}
+
+export interface DefinitionResult {
+  definitions: DefinitionEntry[];
+  synonyms: string[];
+}
+
 export interface CreateCardPayload {
   english: string;
   french: string;

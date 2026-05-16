@@ -12,7 +12,7 @@ enum ReviewDirection {
 }
 
 model User {
-  id            String   @id @default(uuid()) @db.Uuid
+  id            String   @id @default(uuid())
   googleId      String   @unique
   email         String   @unique
   name          String
@@ -26,19 +26,19 @@ model User {
 }
 
 model UserPreference {
-  userId          String          @id @db.Uuid
+  userId          String          @id
   reviewDirection ReviewDirection @default(EN_TO_FR)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Card {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String?  @db.Uuid
-  english     String
-  french      String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(uuid())
+  userId       String?
+  english      String
+  french       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 }

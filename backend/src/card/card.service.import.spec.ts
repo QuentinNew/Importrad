@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CardRepository } from './card.repository';
 import { CsvParserService } from './csv-parser.service';
+import { DefinitionService } from './definition.service';
 
 const mockRepository = {
   create: jest.fn(),
@@ -14,10 +15,15 @@ const mockRepository = {
   updateUserAnchor: jest.fn(),
 };
 
+const mockDefinitionService = {
+  fetchDefinition: jest.fn(),
+} as unknown as DefinitionService;
+
 function makeService() {
   return new CardService(
     mockRepository as unknown as CardRepository,
     new CsvParserService(),
+    mockDefinitionService,
   );
 }
 

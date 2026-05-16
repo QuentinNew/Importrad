@@ -80,6 +80,39 @@
       </div>
 
       <p class="card-counter" aria-hidden="true">{{ progress() + 1 }} / {{ cards().length }}</p>
+
+      @if (revealed()) {
+        <div class="definition-panel" role="region" aria-label="English definition">
+          @if (definitions().length === 0) {
+            <button
+              class="ir-btn ghost definition-btn"
+              [disabled]="loadingDefinition()"
+              (click)="lookupDefinition()"
+              [attr.aria-busy]="loadingDefinition()"
+              aria-label="Look up English definition"
+            >
+              @if (loadingDefinition()) { Loading… } @else { Look up definition }
+            </button>
+          } @else {
+            <div class="definition-result" role="note">
+              @for (entry of definitions(); track $index) {
+                <div class="definition-entry">
+                  <span class="t-label definition-pos">{{ entry.partOfSpeech }}</span>
+                  <p class="definition-text">{{ entry.text }}</p>
+                  @if (entry.example) {
+                    <p class="definition-example">"{{ entry.example }}"</p>
+                  }
+                </div>
+              }
+              @if (synonyms().length > 0) {
+                <p class="definition-synonyms">
+                  <span class="t-label">Synonyms: </span>{{ synonyms().join(', ') }}
+                </p>
+              }
+            </div>
+          }
+        </div>
+      }
     }
   </div>
 </div>

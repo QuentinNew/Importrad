@@ -6,6 +6,7 @@ import { CardController } from './card.controller';
 import { CardService } from './card.service';
 import { CardRepository } from './card.repository';
 import { CsvParserService } from './csv-parser.service';
+import { DefinitionService } from './definition.service';
 import { CardResponseDto } from './dto/card-response.dto';
 
 const prismaNotFound = new Prisma.PrismaClientKnownRequestError('Record not found', {
@@ -33,6 +34,10 @@ const mockCardRepository = {
   updateUserAnchor: jest.fn(),
 };
 
+const mockDefinitionService = {
+  fetchDefinition: jest.fn(),
+};
+
 async function buildApp() {
   const module: TestingModule = await Test.createTestingModule({
     controllers: [CardController],
@@ -40,6 +45,7 @@ async function buildApp() {
       CardService,
       CsvParserService,
       { provide: CardRepository, useValue: mockCardRepository },
+      { provide: DefinitionService, useValue: mockDefinitionService },
     ],
   }).compile();
 
@@ -227,6 +233,34 @@ describe('CardController', () => {
       await request(app.getHttpServer())
         .post('/cards/import')
         .expect(400);
+    });
+  });
+
+  describe('GET /cards/:id/definition', () => {
+    const definitionResult = {
+      definitions: [
+        { partOfSpeech: 'exclamation', text: 'used as a greeting.', example: 'Hello there!' },
+      ],
+      synonyms: ['hi', 'hey'],
+    };
+
+    it('returns 200 with definition, synonyms and example', async () => {
+      mockCardRepository.findById.mockResolvedValue(mockCard);
+      mockDefinitionService.fetchDefinition.mockResolvedValue(definitionResult);
+
+      const response = await request(app.getHttpServer())
+        .get(`/cards/${mockCard.id}/definition`)
+        .expect(200);
+
+      expect(response.body).toEqual(definitionResult);
+    });
+
+    it('returns 404 when card does not exist', async () => {
+      mockCardRepository.findById.mockResolvedValue(null);
+
+      await request(app.getHttpServer())
+        .get(`/cards/${mockCard.id}/definition`)
+        .expect(404);
     });
   });
 });
