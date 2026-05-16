@@ -3,6 +3,7 @@ import { plainToInstance } from 'class-transformer';
 import { Prisma } from '@prisma/client';
 import { CardRepository } from './card.repository';
 import { CsvParserService } from './csv-parser.service';
+import { DefinitionService } from './definition.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { CardResponseDto } from './dto/card-response.dto';
@@ -18,6 +19,7 @@ export class CardService {
   constructor(
     private readonly cardRepository: CardRepository,
     private readonly csvParser: CsvParserService,
+    private readonly definitionService: DefinitionService,
   ) {}
 
   private toDto(card: object): CardResponseDto {
@@ -61,6 +63,15 @@ export class CardService {
       if (isPrismaNotFound(err)) throw new NotFoundException('Card not found');
       throw err;
     }
+  }
+
+  async getDefinition(id: string, lang: 'en' | 'fr'): Promise<{ definition: string }> {
+    const card = await this.cardRepository.findById(id);
+    if (!card) throw new NotFoundException('Card not found');
+    const cached = lang === 'en' ? card.definitionEn : card.definitionFr;
+    const word = lang === 'en' ? card.english : card.french;
+    const definition = await this.definitionService.getDefinition(id, word, lang, cached ?? null);
+    return { definition };
   }
 
   async importCsv(fileBuffer: Buffer, userId: string | undefined): Promise<ImportResult> {

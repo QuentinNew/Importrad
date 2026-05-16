@@ -6,6 +6,7 @@ import { CardController } from './card.controller';
 import { CardService } from './card.service';
 import { CardRepository } from './card.repository';
 import { CsvParserService } from './csv-parser.service';
+import { DefinitionService } from './definition.service';
 import { CardResponseDto } from './dto/card-response.dto';
 
 const prismaNotFound = new Prisma.PrismaClientKnownRequestError('Record not found', {
@@ -31,6 +32,11 @@ const mockCardRepository = {
   findByEnglishAndFrench: jest.fn(),
   findUserAnchor: jest.fn(),
   updateUserAnchor: jest.fn(),
+  updateDefinition: jest.fn(),
+};
+
+const mockDefinitionService = {
+  getDefinition: jest.fn(),
 };
 
 async function buildApp() {
@@ -40,6 +46,7 @@ async function buildApp() {
       CardService,
       CsvParserService,
       { provide: CardRepository, useValue: mockCardRepository },
+      { provide: DefinitionService, useValue: mockDefinitionService },
     ],
   }).compile();
 
@@ -227,6 +234,50 @@ describe('CardController', () => {
       await request(app.getHttpServer())
         .post('/cards/import')
         .expect(400);
+    });
+  });
+
+  describe('GET /cards/:id/definition', () => {
+    it('returns 200 with definition when lang=en', async () => {
+      mockCardRepository.findById.mockResolvedValue({ ...mockCard, definitionEn: null, definitionFr: null });
+      mockDefinitionService.getDefinition.mockResolvedValue('A friendly greeting.');
+
+      const response = await request(app.getHttpServer())
+        .get(`/cards/${mockCard.id}/definition?lang=en`)
+        .expect(200);
+
+      expect(response.body).toEqual({ definition: 'A friendly greeting.' });
+    });
+
+    it('returns 200 with definition when lang=fr', async () => {
+      mockCardRepository.findById.mockResolvedValue({ ...mockCard, definitionEn: null, definitionFr: null });
+      mockDefinitionService.getDefinition.mockResolvedValue('Une salutation amicale.');
+
+      const response = await request(app.getHttpServer())
+        .get(`/cards/${mockCard.id}/definition?lang=fr`)
+        .expect(200);
+
+      expect(response.body).toEqual({ definition: 'Une salutation amicale.' });
+    });
+
+    it('returns 400 when lang param is invalid', async () => {
+      await request(app.getHttpServer())
+        .get(`/cards/${mockCard.id}/definition?lang=es`)
+        .expect(400);
+    });
+
+    it('returns 400 when lang param is missing', async () => {
+      await request(app.getHttpServer())
+        .get(`/cards/${mockCard.id}/definition`)
+        .expect(400);
+    });
+
+    it('returns 404 when card does not exist', async () => {
+      mockCardRepository.findById.mockResolvedValue(null);
+
+      await request(app.getHttpServer())
+        .get(`/cards/${mockCard.id}/definition?lang=en`)
+        .expect(404);
     });
   });
 });

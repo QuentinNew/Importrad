@@ -80,6 +80,49 @@
       </div>
 
       <p class="card-counter" aria-hidden="true">{{ progress() + 1 }} / {{ cards().length }}</p>
+
+      @if (revealed()) {
+        <div class="definition-panel" role="region" aria-label="Word definitions">
+          <div class="definition-actions">
+            <button
+              class="ir-btn ghost definition-btn"
+              [disabled]="loadingEn()"
+              (click)="lookupDefinition('en')"
+              [attr.aria-busy]="loadingEn()"
+              aria-label="Get definition in English"
+            >
+              @if (loadingEn()) {
+                Loading…
+              } @else {
+                Definition in English
+              }
+            </button>
+            <button
+              class="ir-btn ghost definition-btn"
+              [disabled]="loadingFr()"
+              (click)="lookupDefinition('fr')"
+              [attr.aria-busy]="loadingFr()"
+              aria-label="Get definition in French"
+            >
+              @if (loadingFr()) {
+                Loading…
+              } @else {
+                Definition in French
+              }
+            </button>
+          </div>
+          @if (definitionEn()) {
+            <div class="definition-result" role="note" aria-label="English definition">
+              <p class="definition-text">{{ definitionEn() }}</p>
+            </div>
+          }
+          @if (definitionFr()) {
+            <div class="definition-result" role="note" aria-label="French definition">
+              <p class="definition-text">{{ definitionFr() }}</p>
+            </div>
+          }
+        </div>
+      }
     }
   </div>
 </div>

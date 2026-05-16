@@ -20,6 +20,9 @@ A study event where the User sees one side of a Card and grades their recall usi
 ### Review Direction
 Whether a Review shows the English side (prompting for French) or the French side (prompting for English). Configurable per User, defaults to EN→FR. Both directions can be mixed.
 
+### Practice
+A session where the User studies cards one at a time from their Pool. Cards are presented in random order. The User sees the English side first, taps to reveal the French side, then advances to the next card. No grading is recorded — Practice is a lightweight study tool, distinct from a scored Review.
+
 ### Algorithm
 The logic that takes a Card's history to focus difficult. Not defined yet.
 
@@ -35,7 +38,10 @@ A bulk operation that parses a CSV file and creates Cards from it. Each row is `
 The first row of the most recently uploaded CSV, stored per User. On the next import, processing stops when this row is encountered — modelling the fact that Google Translate exports are append-only (new words are prepended to the same file). Updated unconditionally after every import. If the anchor row is absent from the new file, all rows are processed and the anchor resets to the new file's first row.
 
 ### AI Prompt
-A curated, fixed-choice action available on any Card during or after Review. Examples: "Show example sentence", "Show synonyms", "Memory tip". Implemented as calls to an external AI provider (provider TBD). The interface is abstracted so the provider can be swapped without changing card or review logic.
+A curated, fixed-choice action available on any Card during Practice or Review. Examples: "Definition in French", "Definition in English". Implemented as calls to the NVIDIA LLM API (OpenAI-compatible). The interface is abstracted so the provider can be swapped without changing card or review logic.
+
+### Definition
+An AI-generated explanation of a Card's word or phrase in a single language, consisting of a short dictionary-style definition and one example sentence. Stored per Card per language (`definitionEn`, `definitionFr`) and fetched on demand — the backend returns the cached value if it exists, otherwise calls the LLM, stores the result, and returns it. Definitions are not regenerated once cached.
 
 ### User
 An authenticated person identified by Google OAuth. Each User owns their own Pool and preference. No email/password auth.

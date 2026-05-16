@@ -3,6 +3,8 @@ export interface Card {
   userId: string | null;
   english: string;
   french: string;
+  definitionEn?: string;
+  definitionFr?: string;
   createdAt: string;
   updatedAt: string;
 }

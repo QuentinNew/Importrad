@@ -37,4 +37,10 @@ export class CardService {
     form.append('file', file);
     return this.http.post<{ imported: number; skipped: number }>(`${this.base}/import`, form);
   }
+
+  getDefinition(cardId: string, lang: 'en' | 'fr'): Observable<{ definition: string }> {
+    return this.http.get<{ definition: string }>(`${this.base}/${cardId}/definition`, {
+      params: { lang },
+    });
+  }
 }

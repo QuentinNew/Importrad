@@ -59,4 +59,11 @@ export class CardRepository {
       data: { anchorEnglish, anchorFrench },
     }).then(() => undefined);
   }
+
+  updateDefinition(id: string, lang: 'en' | 'fr', value: string): Promise<Card> {
+    const data = lang === 'en'
+      ? { definitionEn: value }
+      : { definitionFr: value };
+    return this.prisma.card.update({ where: { id }, data });
+  }
 }

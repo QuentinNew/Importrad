@@ -25,6 +25,10 @@ export class Practice implements OnInit {
   readonly cards = signal<Card[]>([]);
   readonly currentIndex = signal(0);
   readonly revealed = signal(false);
+  readonly definitionEn = signal<string | null>(null);
+  readonly definitionFr = signal<string | null>(null);
+  readonly loadingEn = signal(false);
+  readonly loadingFr = signal(false);
 
   readonly currentCard = computed(() => {
     const list = this.cards();
@@ -56,6 +60,8 @@ export class Practice implements OnInit {
   next(): void {
     this.currentIndex.update((i) => i + 1);
     this.revealed.set(false);
+    this.definitionEn.set(null);
+    this.definitionFr.set(null);
     setTimeout(() => (this.revealBtn()?.nativeElement ?? this.cardStage()?.nativeElement)?.focus(), 0);
   }
 
@@ -63,7 +69,42 @@ export class Practice implements OnInit {
     this.cards.update((list) => this.shuffle([...list]));
     this.currentIndex.set(0);
     this.revealed.set(false);
+    this.definitionEn.set(null);
+    this.definitionFr.set(null);
     setTimeout(() => (this.revealBtn()?.nativeElement ?? this.cardStage()?.nativeElement)?.focus(), 0);
+  }
+
+  lookupDefinition(lang: 'en' | 'fr'): void {
+    const card = this.currentCard();
+    if (!card) return;
+
+    if (lang === 'en') {
+      if (this.loadingEn()) return;
+      this.loadingEn.set(true);
+      this.cardService.getDefinition(card.id, 'en').subscribe({
+        next: ({ definition }) => {
+          this.definitionEn.set(definition);
+          this.loadingEn.set(false);
+        },
+        error: () => {
+          this.snackBar.open('Failed to load definition', 'Dismiss', { duration: 3000 });
+          this.loadingEn.set(false);
+        },
+      });
+    } else {
+      if (this.loadingFr()) return;
+      this.loadingFr.set(true);
+      this.cardService.getDefinition(card.id, 'fr').subscribe({
+        next: ({ definition }) => {
+          this.definitionFr.set(definition);
+          this.loadingFr.set(false);
+        },
+        error: () => {
+          this.snackBar.open('Failed to load definition', 'Dismiss', { duration: 3000 });
+          this.loadingFr.set(false);
+        },
+      });
+    }
   }
 
   openEdit(): void {

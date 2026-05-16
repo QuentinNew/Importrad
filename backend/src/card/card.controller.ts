@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -48,6 +49,17 @@ export class CardController {
   @Get(':id')
   findById(@Param('id', ParseUUIDPipe) id: string): Promise<CardResponseDto> {
     return this.cardService.findById(id);
+  }
+
+  @Get(':id/definition')
+  getDefinition(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('lang') lang: string,
+  ): Promise<{ definition: string }> {
+    if (lang !== 'en' && lang !== 'fr') {
+      throw new BadRequestException('lang must be "en" or "fr"');
+    }
+    return this.cardService.getDefinition(id, lang as 'en' | 'fr');
   }
 
   @Patch(':id')
