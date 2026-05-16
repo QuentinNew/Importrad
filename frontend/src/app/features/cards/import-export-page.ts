@@ -7,6 +7,7 @@ import { CardService } from './card.service';
   selector: 'app-import-export-page',
   imports: [MatButtonModule],
   templateUrl: './import-export-page.html',
+  styleUrl: './import-export-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImportExportPage {
