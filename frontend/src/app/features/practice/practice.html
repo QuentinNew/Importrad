@@ -1,0 +1,65 @@
+<div class="practice-shell">
+  <header class="practice-header" role="banner">
+    <h1 class="practice-title">Practice</h1>
+  </header>
+
+  <div class="ir-flash" role="main">
+    @if (isEmpty()) {
+      <div class="ir-empty" role="status" aria-live="polite">
+        <div class="t">Nothing to study.</div>
+        <p>Import some words first.</p>
+      </div>
+    } @else if (allSeen()) {
+      <div class="ir-empty" role="status" aria-live="polite">
+        <div class="t">All cards seen.</div>
+        <p>Great job! Ready to go again?</p>
+        <button
+          class="ir-btn primary restart-btn"
+          (click)="restart()"
+          aria-label="Re-shuffle and start over"
+        >
+          Start over
+        </button>
+      </div>
+    } @else {
+      <div class="progress-bar" role="progressbar" [attr.aria-valuenow]="progress()" [attr.aria-valuemax]="cards().length" [attr.aria-valuemin]="0" [attr.aria-label]="progress() + ' of ' + cards().length + ' cards'">
+        <div class="progress-fill" [style.width.%]="(progress() / cards().length) * 100"></div>
+      </div>
+
+      <div
+        class="ir-flash-stage"
+        role="article"
+        [attr.aria-label]="'Card ' + (progress() + 1) + ' of ' + cards().length"
+      >
+        <span class="ir-flash-meta t-label">English</span>
+
+        <p class="ir-flash-target" aria-live="polite">
+          {{ currentCard()?.english }}
+        </p>
+
+        @if (!revealed()) {
+          <button
+            class="ir-btn ghost"
+            (click)="reveal()"
+            aria-label="Tap to reveal French translation"
+          >
+            Tap to reveal
+          </button>
+        } @else {
+          <div class="reveal-block" aria-live="polite">
+            <p class="ir-flash-native">{{ currentCard()?.french }}</p>
+            <button
+              class="ir-btn primary"
+              (click)="next()"
+              aria-label="Next card"
+            >
+              Next card
+            </button>
+          </div>
+        }
+      </div>
+
+      <p class="card-counter" aria-hidden="true">{{ progress() + 1 }} / {{ cards().length }}</p>
+    }
+  </div>
+</div>

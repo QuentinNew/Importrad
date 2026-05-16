@@ -1,0 +1,46 @@
+<div class="app-shell">
+  <main class="app-content">
+    <router-outlet />
+  </main>
+
+  <nav class="ir-tabbar" aria-label="Main navigation">
+    <a
+      routerLink="/cards"
+      routerLinkActive="on"
+      class="ir-tab"
+      aria-label="Library"
+    >
+      <mat-icon aria-hidden="true">menu_book</mat-icon>
+      <span>Library</span>
+    </a>
+
+    <a
+      routerLink="/practice"
+      routerLinkActive="on"
+      class="ir-tab"
+      aria-label="Practice"
+    >
+      <mat-icon aria-hidden="true">school</mat-icon>
+      <span>Practice</span>
+    </a>
+
+    <button
+      class="ir-tab"
+      (click)="openImport()"
+      aria-label="Import CSV"
+    >
+      <mat-icon aria-hidden="true">upload_file</mat-icon>
+      <span>Import</span>
+    </button>
+
+    <a
+      routerLink="/you"
+      routerLinkActive="on"
+      class="ir-tab"
+      aria-label="You"
+    >
+      <mat-icon aria-hidden="true">person</mat-icon>
+      <span>You</span>
+    </a>
+  </nav>
+</div>

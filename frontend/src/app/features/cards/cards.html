@@ -1,41 +1,44 @@
-<mat-toolbar color="primary">
-  <span>Cards</span>
-  <span class="spacer"></span>
-  <button mat-icon-button aria-label="Import CSV" (click)="openImport()">
-    <mat-icon>upload</mat-icon>
-  </button>
-  <button mat-icon-button aria-label="Add card" (click)="openCreate()">
-    <mat-icon>add</mat-icon>
-  </button>
-</mat-toolbar>
+<div class="lib-header">
+  <div class="lib-header-inner">
+    <h1 class="lib-title">Library</h1>
+    <button class="ir-icon-btn" aria-label="Add card" (click)="openCreate()">
+      <mat-icon aria-hidden="true">add</mat-icon>
+    </button>
+  </div>
+</div>
 
-<table mat-table [dataSource]="cards()" class="table">
-  <ng-container matColumnDef="english">
-    <th mat-header-cell *matHeaderCellDef>English</th>
-    <td mat-cell *matCellDef="let card">{{ card.english }}</td>
-  </ng-container>
-
-  <ng-container matColumnDef="french">
-    <th mat-header-cell *matHeaderCellDef>French</th>
-    <td mat-cell *matCellDef="let card">{{ card.french }}</td>
-  </ng-container>
-
-  <ng-container matColumnDef="actions">
-    <th mat-header-cell *matHeaderCellDef></th>
-    <td mat-cell *matCellDef="let card">
-      <button mat-icon-button aria-label="Edit card" (click)="openEdit(card)">
-        <mat-icon>edit</mat-icon>
-      </button>
-      <button mat-icon-button aria-label="Delete card" (click)="delete(card)">
-        <mat-icon>delete</mat-icon>
-      </button>
-    </td>
-  </ng-container>
-
-  <tr mat-header-row *matHeaderRowDef="columns"></tr>
-  <tr mat-row *matRowDef="let row; columns: columns"></tr>
-
-  <tr class="mat-row" *matNoDataRow>
-    <td class="mat-cell no-data" [attr.colspan]="columns.length">No cards yet.</td>
-  </tr>
-</table>
+<div class="lib-body">
+  @if (cards().length === 0) {
+    <div class="ir-empty" role="status">
+      <div class="t">No cards yet.</div>
+      <p>Import a CSV or add cards manually.</p>
+    </div>
+  } @else {
+    <ul class="word-list" role="list" aria-label="Vocabulary cards">
+      @for (card of cards(); track card.id) {
+        <li class="word-row">
+          <div class="word-info">
+            <span class="word-target">{{ card.english }}</span>
+            <span class="word-native">{{ card.french }}</span>
+          </div>
+          <div class="word-actions">
+            <button
+              class="ir-icon-btn"
+              [attr.aria-label]="'Edit ' + card.english"
+              (click)="openEdit(card)"
+            >
+              <mat-icon aria-hidden="true">edit</mat-icon>
+            </button>
+            <button
+              class="ir-icon-btn"
+              [attr.aria-label]="'Delete ' + card.english"
+              (click)="delete(card)"
+            >
+              <mat-icon aria-hidden="true">delete</mat-icon>
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>
