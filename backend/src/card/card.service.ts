@@ -73,9 +73,7 @@ export class CardService {
 
   async exportCsv(userId: string): Promise<string> {
     const cards = await this.cardRepository.findAllByUserId(userId);
-    const header = 'Anglais,Français';
-    const rows = cards.map((c) => `Anglais,Français,${c.english},${c.french}`);
-    return [header, ...rows].join('\n');
+    return cards.map((c) => `Anglais,Français,${c.english},${c.french}`).join('\n');
   }
 
   async importCsv(fileBuffer: Buffer, userId: string | undefined): Promise<ImportResult> {

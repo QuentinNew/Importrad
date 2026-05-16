@@ -43,7 +43,7 @@ export class ImportExportPage {
     });
   }
 
-  export(): void {
+  exportCards(): void {
     if (this.exporting()) return;
     this.exporting.set(true);
     this.cardService.exportCsv().subscribe({
@@ -54,7 +54,7 @@ export class ImportExportPage {
         a.href = url;
         a.download = 'importrad-export.csv';
         a.click();
-        URL.revokeObjectURL(url);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
       },
       error: () => {
         this.exporting.set(false);

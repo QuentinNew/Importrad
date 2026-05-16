@@ -54,7 +54,7 @@
       mat-raised-button
       color="accent"
       [disabled]="exporting()"
-      (click)="export()"
+      (click)="exportCards()"
     >
       {{ exporting() ? 'Exporting…' : 'Export' }}
     </button>
